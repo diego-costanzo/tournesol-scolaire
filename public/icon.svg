@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFBEB" />
+      <stop offset="100%" stop-color="#FEF3C7" />
+    </linearGradient>
+    <linearGradient id="petal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <linearGradient id="center" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#78350F" />
+      <stop offset="100%" stop-color="#451A03" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#78350F" flood-opacity="0.18" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle -->
+  <rect width="512" height="512" rx="120" fill="url(#bg)" />
+
+  <!-- Sunflower group -->
+  <g transform="translate(256, 256)" filter="url(#shadow)">
+    <!-- Petals layer 1 -->
+    <g fill="url(#petal)">
+      <!-- 12 petals arranged in circle -->
+      <path d="M0 -60 C-22 -120 -35 -190 0 -220 C35 -190 22 -120 0 -60 Z" />
+      <path d="M0 -60 C-22 -120 -35 -190 0 -220 C35 -190 22 -120 0 -60 Z" transform="rotate(30)" />
+      <path d="M0 -60 C-22 -120 -35 -190 0 -220 C35 -190 22 -120 0 -60 Z" transform="rotate(60)" />
+      <path d="M0 -60 C-22 -120 -35 -190 0 -220 C35 -190 22 -120 0 -60 Z" transform="rotate(90)" />
+      <path d="M0 -60 C-22 -120 -35 -190 0 -220 C35 -190 22 -120 0 -60 Z" transform="rotate(120)" />
+      <path d="M0 -60 C-22 -120 -35 -190 0 -220 C35 -190 22 -120 0 -60 Z" transform="rotate(150)" />
+      <path d="M0 -60 C-22 -120 -35 -190 0 -220 C35 -190 22 -120 0 -60 Z" transform="rotate(180)" />
+      <path d="M0 -60 C-22 -120 -35 -190 0 -220 C35 -190 22 -120 0 -60 Z" transform="rotate(210)" />
+      <path d="M0 -60 C-22 -120 -35 -190 0 -220 C35 -190 22 -120 0 -60 Z" transform="rotate(240)" />
+      <path d="M0 -60 C-22 -120 -35 -190 0 -220 C35 -190 22 -120 0 -60 Z" transform="rotate(270)" />
+      <path d="M0 -60 C-22 -120 -35 -190 0 -220 C35 -190 22 -120 0 -60 Z" transform="rotate(300)" />
+      <path d="M0 -60 C-22 -120 -35 -190 0 -220 C35 -190 22 -120 0 -60 Z" transform="rotate(330)" />
+    </g>
+
+    <!-- Center Seed Disc -->
+    <circle r="72" fill="url(#center)" />
+    <circle r="68" fill="none" stroke="#F59E0B" stroke-width="2.5" stroke-dasharray="4,6" opacity="0.6" />
+    <circle r="50" fill="none" stroke="#F59E0B" stroke-width="2.5" stroke-dasharray="4,6" opacity="0.5" />
+    <circle r="32" fill="none" stroke="#FBBF24" stroke-width="2" stroke-dasharray="3,5" opacity="0.4" />
+    
+    <!-- Central book/leaf sprout subtle accent -->
+    <path d="M-18 8 Q0 -16 18 8 Q0 24 -18 8 Z" fill="#10B981" opacity="0.9" />
+  </g>
+</svg>

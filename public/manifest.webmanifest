@@ -1,0 +1,32 @@
+{
+  "id": "/",
+  "name": "Tournesol - Edu-Hub & Vie Scolaire",
+  "short_name": "Tournesol",
+  "description": "Portail éducatif modulaire et sans distraction : devoirs, emploi du temps, packs de cours et bridge système.",
+  "theme_color": "#F59E0B",
+  "background_color": "#FFFDF0",
+  "display": "standalone",
+  "orientation": "any",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

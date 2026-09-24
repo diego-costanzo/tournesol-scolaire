@@ -1,0 +1,6 @@
+{
+  "name": "Tournesol - Edu-Hub & Vie Scolaire",
+  "description": "Portail éducatif modulaire et sans distraction : gestion des devoirs, emploi du temps, pack de cours hors-ligne, mises à jour système et logithèque libre.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

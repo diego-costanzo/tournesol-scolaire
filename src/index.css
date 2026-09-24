@@ -1,0 +1,191 @@
+@import "tailwindcss";
+
+@layer base {
+  *, ::before, ::after {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    touch-action: pan-y;
+  }
+
+  #root {
+    overflow-x: hidden !important;
+    max-width: 100vw;
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  code, pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* ========================================================
+   SCROLLBAR SUPPRESSION UTILITIES
+   Completely removes horizontal/vertical scrollbars for
+   clean touch & tablet experience.
+   ======================================================== */
+.scrollbar-none,
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.scrollbar-none::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* ========================================================
+   GLOBAL THEME PALETTE ENGINE
+   Dynamically aligns all tabs, cards, borders, badges,
+   inputs, gradients and buttons to the selected theme.
+   ======================================================== */
+
+:root,
+:root[data-theme="amber"],
+[data-theme="amber"],
+[data-theme="sunflower"],
+[data-theme="honey"],
+[data-theme="lemon"] {
+  --color-amber-50: #FFFDF0;
+  --color-amber-100: #FEF9C3;
+  --color-amber-200: #FDE68A;
+  --color-amber-300: #FCD34D;
+  --color-amber-400: #FBBF24;
+  --color-amber-500: #F59E0B;
+  --color-amber-600: #D97706;
+  --color-amber-700: #B45309;
+  --color-amber-800: #92400E;
+  --color-amber-900: #78350F;
+  --color-amber-950: #451A03;
+
+  --color-yellow-50: #FFFDF0;
+  --color-yellow-100: #FEF9C3;
+  --color-yellow-200: #FDE68A;
+  --color-yellow-300: #FCD34D;
+  --color-yellow-400: #FBBF24;
+  --color-yellow-500: #F59E0B;
+}
+
+:root[data-theme="blue"],
+[data-theme="blue"],
+[data-theme="night"] {
+  --color-amber-50: #F0F9FF;
+  --color-amber-100: #E0F2FE;
+  --color-amber-200: #BAE6FD;
+  --color-amber-300: #7DD3FC;
+  --color-amber-400: #38BDF8;
+  --color-amber-500: #0EA5E9;
+  --color-amber-600: #0284C7;
+  --color-amber-700: #0369A1;
+  --color-amber-800: #075985;
+  --color-amber-900: #0C4A6E;
+  --color-amber-950: #082F49;
+
+  --color-yellow-50: #F0F9FF;
+  --color-yellow-100: #E0F2FE;
+  --color-yellow-200: #BAE6FD;
+  --color-yellow-300: #7DD3FC;
+  --color-yellow-400: #38BDF8;
+  --color-yellow-500: #0EA5E9;
+}
+
+:root[data-theme="purple"],
+[data-theme="purple"] {
+  --color-amber-50: #FAF5FF;
+  --color-amber-100: #F3E8FF;
+  --color-amber-200: #E9D5FF;
+  --color-amber-300: #D8B4FE;
+  --color-amber-400: #C084FC;
+  --color-amber-500: #A855F7;
+  --color-amber-600: #9333EA;
+  --color-amber-700: #7E22CE;
+  --color-amber-800: #6B21A8;
+  --color-amber-900: #581C87;
+  --color-amber-950: #3B0764;
+
+  --color-yellow-50: #FAF5FF;
+  --color-yellow-100: #F3E8FF;
+  --color-yellow-200: #E9D5FF;
+  --color-yellow-300: #D8B4FE;
+  --color-yellow-400: #C084FC;
+  --color-yellow-500: #A855F7;
+}
+
+:root[data-theme="orange"],
+[data-theme="orange"] {
+  --color-amber-50: #FFF7ED;
+  --color-amber-100: #FFEDD5;
+  --color-amber-200: #FED7AA;
+  --color-amber-300: #FDBA74;
+  --color-amber-400: #FB923C;
+  --color-amber-500: #F97316;
+  --color-amber-600: #EA580C;
+  --color-amber-700: #C2410C;
+  --color-amber-800: #9A3412;
+  --color-amber-900: #7C2D12;
+  --color-amber-950: #431407;
+
+  --color-yellow-50: #FFF7ED;
+  --color-yellow-100: #FFEDD5;
+  --color-yellow-200: #FED7AA;
+  --color-yellow-300: #FDBA74;
+  --color-yellow-400: #FB923C;
+  --color-yellow-500: #F97316;
+}
+
+:root[data-theme="green"],
+[data-theme="green"] {
+  --color-amber-50: #F0FDF4;
+  --color-amber-100: #DCFCE7;
+  --color-amber-200: #A7F3D0;
+  --color-amber-300: #6EE7B7;
+  --color-amber-400: #34D399;
+  --color-amber-500: #10B981;
+  --color-amber-600: #059669;
+  --color-amber-700: #047857;
+  --color-amber-800: #065F46;
+  --color-amber-900: #064E3B;
+  --color-amber-950: #022C22;
+
+  --color-yellow-50: #F0FDF4;
+  --color-yellow-100: #DCFCE7;
+  --color-yellow-200: #A7F3D0;
+  --color-yellow-300: #6EE7B7;
+  --color-yellow-400: #34D399;
+  --color-yellow-500: #10B981;
+}
+
+/* Custom friendly scrollbars mapped to active theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-amber-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-amber-400);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-amber-500);
+}
