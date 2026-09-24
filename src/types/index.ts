@@ -308,3 +308,19 @@ export interface QuizMistakeRecord {
   consecutiveCorrect: number;
   mastered: boolean;
 }
+
+// ==========================================
+// GRADES & MOYENNE (VOTI)
+// ==========================================
+export interface GradeItem {
+  id: string;
+  subject: string;
+  subject_fr?: string;
+  subject_it?: string;
+  value: number; // 0 to 20 or 0 to 10
+  outOf: number; // usually 20 in France, 10 in Italy
+  coefficient: number; // weight
+  date: string;
+  notes?: string;
+}
+

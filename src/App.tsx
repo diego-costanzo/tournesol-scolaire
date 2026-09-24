@@ -11,6 +11,7 @@ import { DesktopWindowGuideModal } from './components/modals/DesktopWindowGuideM
 import { HomeworkTab } from './components/tabs/HomeworkTab';
 import { SchoolTimetableTab } from './components/tabs/SchoolTimetableTab';
 import { StudyToolsTab } from './components/tabs/StudyToolsTab';
+import { MoyenneTab } from './components/tabs/MoyenneTab';
 import { UpdatesTab } from './components/tabs/UpdatesTab';
 import { AppStoreTab } from './components/tabs/AppStoreTab';
 import { MobileTransferTab } from './components/tabs/MobileTransferTab';
@@ -29,6 +30,7 @@ import {
   VerifiedApp, 
   TimetableSlot, 
   HomeworkItem, 
+  GradeItem,
   Language, 
   ThemeVariant,
   OperatingSystem
@@ -181,6 +183,19 @@ export default function App() {
     localStorage.setItem('tournesol_homework', JSON.stringify(homework));
   }, [homework]);
 
+  // 7. Grades State
+  const [grades, setGrades] = useState<GradeItem[]>(() => {
+    const saved = localStorage.getItem('tournesol_grades');
+    if (saved) {
+      try { return JSON.parse(saved); } catch {}
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('tournesol_grades', JSON.stringify(grades));
+  }, [grades]);
+
   // Sync sound setting
   useEffect(() => {
     soundFx.enabled = profile.soundEffects;
@@ -297,6 +312,16 @@ export default function App() {
     setHomework(prev => prev.filter(h => h.id !== id));
   };
 
+  // Handlers for Grades
+  const handleAddGrade = (grade: Omit<GradeItem, 'id'>) => {
+    const id = `grade-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    setGrades(prev => [{ ...grade, id }, ...prev]);
+  };
+
+  const handleDeleteGrade = (id: string) => {
+    setGrades(prev => prev.filter(g => g.id !== id));
+  };
+
   // Active Study Session
   const [activeStudyHomeworkId, setActiveStudyHomeworkId] = useState<string | null>(null);
   const activeStudyHomework = homework.find(h => h.id === activeStudyHomeworkId) || null;
@@ -395,33 +420,37 @@ export default function App() {
       className={`min-h-screen ${theme.pageBg} ${theme.bodyText} flex flex-col font-sans transition-colors duration-200 antialiased overflow-x-hidden w-full max-w-full`}
     >
       {/* Top Main Navigation Header */}
-      <Header
-        profile={profile}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        setLanguage={(lang: Language) => setProfile(p => ({ ...p, language: lang }))}
-        setTheme={(themeVar: ThemeVariant) => setProfile(p => ({ ...p, theme: themeVar }))}
-        toggleSound={() => setProfile(p => ({ ...p, soundEffects: !p.soundEffects }))}
-        hasCriticalUpdates={hasCriticalUpdates}
-        pendingHomeworkCount={pendingHomeworkCount}
-        onOpenProfile={() => setIsProfileModalOpen(true)}
-        onOpenBridgeModal={() => setIsBridgeModalOpen(true)}
-        onOpenDesktopWindowModal={() => setIsDesktopWindowModalOpen(true)}
-      />
+      <div className="print:hidden">
+        <Header
+          profile={profile}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          setLanguage={(lang: Language) => setProfile(p => ({ ...p, language: lang }))}
+          setTheme={(themeVar: ThemeVariant) => setProfile(p => ({ ...p, theme: themeVar }))}
+          toggleSound={() => setProfile(p => ({ ...p, soundEffects: !p.soundEffects }))}
+          hasCriticalUpdates={hasCriticalUpdates}
+          pendingHomeworkCount={pendingHomeworkCount}
+          onOpenProfile={() => setIsProfileModalOpen(true)}
+          onOpenBridgeModal={() => setIsBridgeModalOpen(true)}
+          onOpenDesktopWindowModal={() => setIsDesktopWindowModalOpen(true)}
+        />
+      </div>
 
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto w-full px-3 sm:px-4 md:px-6 py-5 sm:py-6 md:py-8 flex-1 overflow-x-hidden">
         {/* Automatic Backup Reminder Banner */}
-        <AutoBackupReminder
-          profile={profile}
-          homework={homework}
-          timetable={timetable}
-          onUpdateProfile={handleUpdateProfile}
-        />
+        <div className="print:hidden mb-6">
+          <AutoBackupReminder
+            profile={profile}
+            homework={homework}
+            timetable={timetable}
+            onUpdateProfile={handleUpdateProfile}
+          />
+        </div>
 
         {/* Disk Backup Quick-Recovery Banner (if a valid backup exists on PC disk) */}
         {diskBackupFound && (
-          <div className="mb-4 p-4 rounded-2xl bg-emerald-800 text-white shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-emerald-600 animate-in fade-in slide-in-from-top-2">
+          <div className="mb-4 p-4 rounded-2xl bg-emerald-800 text-white shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-emerald-600 animate-in fade-in slide-in-from-top-2 print:hidden">
             <div className="flex items-start gap-3">
               <span className="text-2xl mt-0.5 shrink-0">💾</span>
               <div>
@@ -487,6 +516,16 @@ export default function App() {
             onDeleteSlot={handleDeleteSlot}
             onBatchAddSlots={handleBatchAddSlots}
             onAddBatchHomework={handleAddBatchHomework}
+          />
+        )}
+
+        {/* Moyenne / Voti */}
+        {activeTab === 'moyenne' && (
+          <MoyenneTab
+            profile={profile}
+            grades={grades}
+            onAddGrade={handleAddGrade}
+            onDeleteGrade={handleDeleteGrade}
           />
         )}
 

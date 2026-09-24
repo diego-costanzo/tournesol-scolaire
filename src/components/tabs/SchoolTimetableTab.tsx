@@ -7,12 +7,15 @@ import {
   Plus, 
   Layers, 
   Trash2,
-  BookOpen
+  BookOpen,
+  Printer
 } from 'lucide-react';
 import { TimetableSlot, StudentProfile, GradeCycle, HomeworkItem } from '../../types';
 import { translations } from '../../i18n/translations';
 import { soundFx } from '../../utils/audio';
 import { CalendarSyncModal } from '../study/CalendarSyncModal';
+import { getThemeConfig } from '../../utils/themeStyles';
+import { exportTimetableToICS } from '../../utils/icsExport';
 
 interface SchoolTimetableTabProps {
   profile: StudentProfile;
@@ -40,6 +43,8 @@ export const SchoolTimetableTab: React.FC<SchoolTimetableTabProps> = ({
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+  
+  const theme = getThemeConfig(profile.theme);
 
   // Derive student's French school cycle
   const currentGradeCycle: GradeCycle = 
@@ -149,6 +154,11 @@ export const SchoolTimetableTab: React.FC<SchoolTimetableTabProps> = ({
     setIsAddModalOpen(false);
   };
 
+  const handleExportIcs = () => {
+    soundFx.playSuccess();
+    exportTimetableToICS(timetable, profile.currentWeek, profile.language);
+  };
+
   return (
     <div className="space-y-6">
       {/* Clean Compact Header */}
@@ -194,6 +204,15 @@ export const SchoolTimetableTab: React.FC<SchoolTimetableTabProps> = ({
           >
             <CalendarDays className="w-3.5 h-3.5 text-slate-600" />
             <span>{isIt ? 'Pronote' : 'Pronote'}</span>
+          </button>
+
+          <button
+            onClick={handleExportIcs}
+            title={isIt ? 'Esporta in Apple/Google Calendar' : 'Exporter vers Apple/Google Calendar'}
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs border border-slate-200 transition active:scale-95 cursor-pointer"
+          >
+            <CalendarDays className="w-3.5 h-3.5 text-blue-600" />
+            <span>iCal</span>
           </button>
 
           <button

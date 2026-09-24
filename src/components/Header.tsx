@@ -12,7 +12,8 @@ import {
   ArrowLeftRight,
   Radio,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Calculator
 } from 'lucide-react';
 import { Language, ThemeVariant, StudentProfile, BridgeConnectionStatus } from '../types';
 import { translations } from '../i18n/translations';
@@ -84,6 +85,12 @@ export const Header: React.FC<HeaderProps> = ({
       sublabel: `Sett. ${profile.currentWeek}`
     },
     {
+      id: 'moyenne',
+      label: isIt ? 'Voti (Media)' : 'Notes (Moyenne)',
+      shortLabel: isIt ? 'Voti' : 'Notes',
+      icon: Calculator
+    },
+    {
       id: 'study',
       label: isIt ? 'Studio & Formule' : 'Outils & Révision',
       shortLabel: isIt ? 'Studio' : 'Outils',
@@ -150,21 +157,21 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 key={item.id}
                 onClick={() => handleTabChange(item.id)}
-                className={`flex items-center gap-1 px-1.5 lg:px-2 py-1.5 rounded-lg text-[11px] lg:text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] lg:text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   isActive
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                    ? `${theme.accentSoft} ${theme.headingText} shadow-xs border ${theme.cardBorderSubtle}`
+                    : `text-slate-500 hover:${theme.headingText} hover:bg-white/60`
                 }`}
                 title={item.label}
               >
-                <Icon className={`w-3.5 h-3.5 shrink-0 ${
-                  isActive ? 'text-amber-600' : 'text-slate-500'
+                <Icon className={`w-4 h-4 shrink-0 ${
+                  isActive ? theme.headingText : 'text-slate-500'
                 }`} />
-                {/* On tablet (md), show active tab label always, show others on xl+ */}
-                <span className={`${isActive ? 'inline' : 'hidden xl:inline'} 2xl:hidden`}>
-                  {item.shortLabel}
-                </span>
-                <span className="hidden 2xl:inline">{item.label}</span>
+                
+                {isActive && (
+                  <span>{item.shortLabel}</span>
+                )}
+
                 {item.badge && (
                   <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black leading-none ${
                     item.id === 'updates' ? 'bg-rose-500 text-white animate-pulse' : 'bg-amber-500 text-white'

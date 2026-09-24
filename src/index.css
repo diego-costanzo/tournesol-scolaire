@@ -189,3 +189,23 @@
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-amber-500);
 }
+
+/* ========================================================
+   PRINT & PDF EXPORT STYLES
+   ======================================================== */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 1cm;
+  }
+  
+  body {
+    background: white !important;
+  }
+
+  /* Force background colors to print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
