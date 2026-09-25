@@ -17,6 +17,7 @@ import { AppStoreTab } from './components/tabs/AppStoreTab';
 import { MobileTransferTab } from './components/tabs/MobileTransferTab';
 import { SettingsTab } from './components/tabs/SettingsTab';
 import { AutoBackupReminder } from './components/common/AutoBackupReminder';
+import { SunflowerGraphic } from './components/common/SunflowerGraphic';
 import { 
   initialProfile, 
   initialUpdates, 
@@ -480,7 +481,9 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[#FFFDF0] flex flex-col items-center justify-center font-sans p-4">
         <div className="flex flex-col items-center animate-in fade-in zoom-in duration-700 text-center">
-          <span className="text-6xl mb-4 animate-bounce">🌻</span>
+          <div className="w-24 h-24 mb-4 rounded-full bg-white/95 shadow-md border-2 border-amber-200/90 flex items-center justify-center p-2.5 animate-bounce">
+            <SunflowerGraphic className="w-full h-full drop-shadow-xs" />
+          </div>
           <h1 className="text-3xl font-black text-slate-800 mb-2 tracking-tight">Tournesol</h1>
           <p className="text-sm font-bold text-amber-700 mb-2 bg-amber-100/80 px-4 py-1.5 rounded-full border border-amber-200">
             {isIt ? 'Verifica del quaderno in corso...' : 'Vérification du carnet de bord...'}
@@ -506,7 +509,9 @@ export default function App() {
           {/* Top Bar with Language Selector (French by default, switchable for testing) */}
           <div className="bg-amber-400/90 px-6 pt-5 pb-2 flex items-center justify-between">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/30 text-amber-950 text-xs font-bold">
-              <span>🌻</span>
+              <span className="w-4 h-4 inline-flex items-center justify-center">
+                <SunflowerGraphic className="w-full h-full" />
+              </span>
               <span>Tournesol Scolaire</span>
             </span>
 
@@ -534,11 +539,16 @@ export default function App() {
             </div>
           </div>
 
-          {/* Banner Hero */}
+          {/* Banner Hero with High-Contrast Sunflower Medallion */}
           <div className="bg-amber-400 px-8 pb-8 pt-3 sm:px-10 text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==')]"></div>
-            <span className="text-7xl relative z-10 drop-shadow-md">🌻</span>
-            <h1 className="text-3xl sm:text-4xl font-black text-amber-950 mt-3 relative z-10 tracking-tight">
+            
+            {/* Sunflower Medallion: crisp, delicate petal contours and perfect contrast */}
+            <div className="w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-3 rounded-full bg-white/95 shadow-lg border-2 border-amber-300/80 flex items-center justify-center p-2.5 relative z-10 hover:scale-105 transition-transform duration-300">
+              <SunflowerGraphic className="w-full h-full drop-shadow-xs" />
+            </div>
+
+            <h1 className="text-3xl sm:text-4xl font-black text-amber-950 mt-1 relative z-10 tracking-tight">
               {isIt ? 'Benvenuto su Tournesol!' : 'Bienvenue sur Tournesol !'}
             </h1>
             <p className="text-amber-950/90 font-bold mt-2 text-sm sm:text-base relative z-10 max-w-lg mx-auto leading-relaxed">
@@ -561,55 +571,79 @@ export default function App() {
               </p>
             </div>
 
+            {/* Two Central Action Cards: Clear, Intuitive, Reassuring */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
+              {/* Option 1: Démo / Esempi */}
               <button
+                type="button"
                 onClick={() => {
                   handleSetMode('demo');
                   setBootState('ready');
                 }}
-                className="group p-5 rounded-2xl border-2 border-indigo-100 hover:border-indigo-400 bg-indigo-50/50 hover:bg-indigo-50 transition-all text-left flex flex-col gap-2.5 cursor-pointer shadow-2xs hover:shadow-xs"
+                className="group relative p-5 rounded-2xl border-2 border-indigo-200/90 hover:border-indigo-400 bg-gradient-to-b from-indigo-50/70 to-indigo-50/20 hover:from-indigo-50 hover:to-indigo-100/50 transition-all duration-200 text-left flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl group-hover:scale-110 transition-transform origin-left">🧪</span>
-                  <span className="text-[10px] font-black uppercase tracking-wider text-indigo-700 bg-indigo-100/80 px-2 py-0.5 rounded-md">
-                    {isIt ? 'Modalità Demo' : 'Mode Démo'}
-                  </span>
-                </div>
                 <div>
-                  <h4 className="font-bold text-indigo-900 text-sm">
-                    {isIt ? 'Esplora con dati di esempio' : 'Découvrir avec des exemples'}
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                      👀
+                    </span>
+                    <span className="text-[11px] font-bold text-indigo-700 bg-indigo-100/80 px-2.5 py-0.5 rounded-full border border-indigo-200">
+                      {isIt ? 'Solo per curiosare' : 'Idéal pour tester'}
+                    </span>
+                  </div>
+
+                  <h4 className="font-extrabold text-indigo-950 text-base mb-1.5">
+                    {isIt ? 'Guarda gli esempi' : 'Voir des exemples'}
                   </h4>
-                  <p className="text-xs text-indigo-700/80 font-medium mt-1 leading-relaxed">
+
+                  <p className="text-xs text-indigo-900/80 font-medium leading-relaxed">
                     {isIt 
-                      ? 'Compiti, orario scolastico e schede di studio finti per provare ogni funzione senza paura.' 
-                      : 'Cahier de textes, emploi du temps modèle et révisions pré-remplis pour tout essayer sans risque.'}
+                      ? 'Trovi compiti finti, materie e orari già compilati. Ti serve per capire come funziona l\'app in piena tranquillità.' 
+                      : 'Des cours, des devoirs types et un emploi du temps sont déjà remplis. Parfait pour découvrir l\'outil sans hésiter.'}
                   </p>
+                </div>
+
+                <div className="pt-4 mt-3 border-t border-indigo-100/80 flex items-center justify-between text-xs font-bold text-indigo-700 group-hover:text-indigo-900">
+                  <span>{isIt ? 'Esplora la demo' : 'Explorer la démo'}</span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </div>
               </button>
 
+              {/* Option 2: Personnel / Quaderno Nuovo */}
               <button
+                type="button"
                 onClick={() => {
                   handleSetMode('clean');
                   setBootState('ready');
                   setTimeout(() => setIsProfileModalOpen(true), 600);
                 }}
-                className="group p-5 rounded-2xl border-2 border-amber-100 hover:border-amber-400 bg-amber-50/50 hover:bg-amber-50 transition-all text-left flex flex-col gap-2.5 cursor-pointer shadow-2xs hover:shadow-xs"
+                className="group relative p-5 rounded-2xl border-2 border-amber-300 hover:border-amber-500 bg-gradient-to-b from-amber-50/80 to-amber-50/20 hover:from-amber-100/60 hover:to-amber-50 transition-all duration-200 text-left flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 ring-2 ring-amber-400/20"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl group-hover:scale-110 transition-transform origin-left">🚀</span>
-                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded-md">
-                    {isIt ? 'Personale' : 'Personnel'}
-                  </span>
-                </div>
                 <div>
-                  <h4 className="font-bold text-amber-950 text-sm">
-                    {isIt ? 'Inizia il mio quaderno' : 'Créer mon carnet personnel'}
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="w-10 h-10 rounded-xl bg-amber-200/90 text-amber-900 flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-2xs">
+                      🚀
+                    </span>
+                    <span className="text-[11px] font-extrabold text-amber-900 bg-amber-200/90 px-2.5 py-0.5 rounded-full border border-amber-300">
+                      {isIt ? 'Consigliato' : 'Recommandé'}
+                    </span>
+                  </div>
+
+                  <h4 className="font-extrabold text-amber-950 text-base mb-1.5">
+                    {isIt ? 'Inizia per davvero' : 'Commencer pour de vrai'}
                   </h4>
-                  <p className="text-xs text-amber-800/80 font-medium mt-1 leading-relaxed">
+
+                  <p className="text-xs text-amber-900/85 font-medium leading-relaxed">
                     {isIt 
-                      ? 'Crea un quaderno pulito: imposta la tua classe e inserisci i tuoi veri orari e compiti.' 
-                      : 'Carnet vierge prêt à l\'emploi : configurez votre classe et notez vos vrais cours dès aujourd\'hui.'}
+                      ? 'Un quaderno tutto nuovo e pulito: inserisci i tuoi veri orari di scuola, le tue materie e i tuoi compiti di ogni giorno.' 
+                      : 'Un carnet tout neuf et vierge pour votre rentrée : saisissez votre emploi du temps et notez vos vrais cours dès aujourd\'hui.'}
                   </p>
+                </div>
+
+                <div className="pt-4 mt-3 border-t border-amber-200/80 flex items-center justify-between text-xs font-black text-amber-900">
+                  <span>{isIt ? 'Crea il tuo quaderno' : 'Créer mon carnet personnel'}</span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </div>
               </button>
             </div>

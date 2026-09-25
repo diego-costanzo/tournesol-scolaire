@@ -21,6 +21,7 @@ import { soundFx } from '../utils/audio';
 import { getThemeConfig } from '../utils/themeStyles';
 import { systemBridge } from '../services/systemBridge';
 import { PWAInstallButton } from './common/PWAInstallButton';
+import { SunflowerGraphic } from './common/SunflowerGraphic';
 import { useFullscreen } from '../hooks/useFullscreen';
 
 interface HeaderProps {
@@ -129,8 +130,8 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-5 lg:px-6 h-14 flex items-center justify-between gap-1.5 md:gap-2 lg:gap-4 w-full">
         {/* Brand & Student Identity */}
         <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-          <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${theme.accentPrimary} flex items-center justify-center text-base sm:text-lg shadow-xs shrink-0`}>
-            <Sun className={`w-4 h-4 sm:w-5 sm:h-5 ${theme.accentText}`} />
+          <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${theme.accentPrimary} flex items-center justify-center shadow-xs shrink-0 p-1`}>
+            <SunflowerGraphic className="w-full h-full drop-shadow-xs" />
           </div>
           <div>
             <div className="flex items-center gap-1.5 leading-none">
