@@ -40,6 +40,8 @@ interface SettingsTabProps {
   onOpenProfileModal?: () => void;
   onOpenBridgeModal?: () => void;
   onOpenDesktopWindowModal?: () => void;
+  onSetMode: (mode: 'demo' | 'clean') => void;
+  profileMode: 'demo' | 'clean';
 }
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({
@@ -51,7 +53,9 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   onRestoreBackup,
   onOpenProfileModal,
   onOpenBridgeModal,
-  onOpenDesktopWindowModal
+  onOpenDesktopWindowModal,
+  onSetMode,
+  profileMode
 }) => {
   const t = translations[profile.language];
   const isIt = profile.language === 'it';
@@ -270,6 +274,63 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             <span>{isIt ? 'Configurazione Guidata & Anno' : 'Assistant Profil & Classe'}</span>
           </button>
         )}
+      </div>
+
+      {/* Mode Switcher */}
+      <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-xs space-y-4">
+        <div className="flex items-center gap-2.5">
+          <Sparkles className="w-5 h-5 text-indigo-600" />
+          <div>
+            <h3 className="font-bold text-slate-900 text-sm">
+              {isIt ? 'Modalità Dati' : 'Mode des Données'}
+            </h3>
+            <p className="text-xs text-slate-500 font-medium">
+              {isIt ? 'Scegli se usare i tuoi dati personali o testare l\'app con dati finti' : 'Choisissez d\'utiliser vos propres données ou des données de test'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => onSetMode('clean')}
+            className={`flex-1 flex flex-col items-start p-4 rounded-2xl border text-left transition cursor-pointer ${
+              profileMode === 'clean'
+                ? 'border-indigo-600 ring-2 ring-indigo-600/10 bg-indigo-50'
+                : 'border-slate-200 hover:border-slate-300 bg-white'
+            }`}
+          >
+            <div className="flex items-center justify-between w-full">
+              <span className="text-sm font-bold text-slate-900">🧹 {isIt ? 'Inizia da zero (Dati Personali)' : 'Commencer de zéro (Données Personnelles)'}</span>
+              {profileMode === 'clean' && <Check className="w-4 h-4 text-indigo-600 shrink-0" />}
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              {isIt ? 'Pulisce l\'app, disabilita i dati demo e salva solo le tue modifiche.' : 'Nettoie l\'app et la prépare pour votre usage quotidien.'}
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm(isIt ? 'Sei sicuro? I tuoi dati attuali non salvati andranno persi.' : 'Êtes-vous sûr ? Vos données actuelles seront remplacées.')) {
+                onSetMode('demo');
+              }
+            }}
+            className={`flex-1 flex flex-col items-start p-4 rounded-2xl border text-left transition cursor-pointer ${
+              profileMode === 'demo'
+                ? 'border-indigo-600 ring-2 ring-indigo-600/10 bg-indigo-50'
+                : 'border-slate-200 hover:border-slate-300 bg-white'
+            }`}
+          >
+            <div className="flex items-center justify-between w-full">
+              <span className="text-sm font-bold text-slate-900">🔄 {isIt ? 'Ricarica dati di esempio (Demo)' : 'Recharger données de test (Démo)'}</span>
+              {profileMode === 'demo' && <Check className="w-4 h-4 text-indigo-600 shrink-0" />}
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              {isIt ? 'Popola l\'app con compiti e orari finti per vedere come funziona (nessun auto-salvataggio su disco).' : 'Remplit l\'app avec des données fictives pour tester (pas de sauvegarde auto).'}
+            </p>
+          </button>
+        </div>
       </div>
 
       {/* Tone on Tone Themes (Amber, Blue, Purple, Orange, Green) */}

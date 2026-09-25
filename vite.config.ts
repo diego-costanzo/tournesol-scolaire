@@ -69,7 +69,7 @@ function localDiskStoragePlugin() {
 
 export default defineConfig(() => {
   return {
-    base: './',
+    base: '/tournesol-scolaire/',
     plugins: [
       react(),
       tailwindcss(),

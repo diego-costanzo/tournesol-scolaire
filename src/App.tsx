@@ -41,6 +41,15 @@ import { systemBridge } from './services/systemBridge';
 import { backupService } from './services/backupService';
 
 export default function App() {
+  // 0. Profile Mode (demo vs clean)
+  const [profileMode, setProfileMode] = useState<'demo' | 'clean'>(() => {
+    return (localStorage.getItem('tournesol_profile_mode') as 'demo' | 'clean') || 'demo';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('tournesol_profile_mode', profileMode);
+  }, [profileMode]);
+
   // 1. Profile State
   const [profile, setProfile] = useState<StudentProfile>(() => {
     const saved = localStorage.getItem('tournesol_profile');
@@ -85,7 +94,8 @@ export default function App() {
     if (saved) {
       try { return JSON.parse(saved); } catch {}
     }
-    return initialUpdates;
+    const mode = localStorage.getItem('tournesol_profile_mode');
+    return mode === 'clean' ? [] : initialUpdates;
   });
 
   useEffect(() => {
@@ -152,7 +162,8 @@ export default function App() {
     if (saved) {
       try { return JSON.parse(saved); } catch {}
     }
-    return initialTimetable;
+    const mode = localStorage.getItem('tournesol_profile_mode');
+    return mode === 'clean' ? [] : initialTimetable;
   });
 
   useEffect(() => {
@@ -176,7 +187,8 @@ export default function App() {
         });
       } catch {}
     }
-    return initialHomework;
+    const mode = localStorage.getItem('tournesol_profile_mode');
+    return mode === 'clean' ? [] : initialHomework;
   });
 
   useEffect(() => {
@@ -358,6 +370,28 @@ export default function App() {
     });
   };
 
+  const handleSetMode = (mode: 'demo' | 'clean') => {
+    setProfileMode(mode);
+    if (mode === 'clean') {
+      setHomework([]);
+      setTimetable([]);
+      setGrades([]);
+      setUpdates([]);
+      setProfile(initialProfile);
+      localStorage.removeItem('tournesol_homework');
+      localStorage.removeItem('tournesol_timetable');
+      localStorage.removeItem('tournesol_grades');
+      localStorage.removeItem('tournesol_updates');
+    } else {
+      setHomework(initialHomework);
+      setTimetable(initialTimetable);
+      setGrades([]);
+      setUpdates(initialUpdates);
+      setProfile(initialProfile);
+    }
+    soundFx.playSuccess();
+  };
+
   const handleResetAllData = () => {
     setProfile(initialProfile);
     setUpdates(initialUpdates);
@@ -404,6 +438,7 @@ export default function App() {
   // Debounced auto-save directly to PC hard disk via local Node.js server (only after initialization)
   useEffect(() => {
     if (!isDiskInitialized) return;
+    if (profileMode === 'demo') return; // Do not backup demo data to user's disk
     const timer = setTimeout(() => {
       const payload = backupService.createFullBackupPayload(profile, homework, timetable);
       backupService.saveToDiskServer(payload);
@@ -447,6 +482,31 @@ export default function App() {
             onUpdateProfile={handleUpdateProfile}
           />
         </div>
+
+        {/* Banner Modalità Demo */}
+        {profileMode === 'demo' && (
+          <div className="mb-6 p-4 rounded-2xl bg-indigo-50 border border-indigo-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 print:hidden">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl mt-0.5 shrink-0">👀</span>
+              <div>
+                <h4 className="font-bold text-sm text-indigo-900">
+                  {isIt ? "Sei in Modalità Demo (Dati di prova)" : "Vous êtes en mode Démo (Données de test)"}
+                </h4>
+                <p className="text-xs text-indigo-700 mt-0.5">
+                  {isIt ? "L'app mostra compiti e orari di esempio per illustrarne il funzionamento." : "L'application affiche des devoirs et horaires d'exemple."}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => handleSetMode('clean')}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm transition cursor-pointer"
+              >
+                🧹 {isIt ? "Inizia da zero con i tuoi dati" : "Commencer de zéro"}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Disk Backup Quick-Recovery Banner (if a valid backup exists on PC disk) */}
         {diskBackupFound && (
@@ -591,6 +651,8 @@ export default function App() {
             onUpdateProfile={handleUpdateProfile}
             onResetAllData={handleResetAllData}
             onRestoreBackup={handleRestoreBackup}
+            onSetMode={handleSetMode}
+            profileMode={profileMode}
             onOpenProfileModal={() => setIsProfileModalOpen(true)}
             onOpenBridgeModal={() => setIsBridgeModalOpen(true)}
             onOpenDesktopWindowModal={() => setIsDesktopWindowModalOpen(true)}
