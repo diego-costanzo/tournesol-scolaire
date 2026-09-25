@@ -13,13 +13,13 @@ export const translations = {
     weekA: "Semaine A",
     weekB: "Semaine B",
     nav: {
-      homework: "Compiti & Devoirs",
+      homework: "Cahier de Textes",
       timetable: "Emploi du Temps",
-      study: "Outils 4ème & Méthode",
-      updates: "Mises à Jour PC",
+      study: "Outils & Révisions",
+      updates: "Mises à Jour",
       apps: "Logithèque Éducative",
       transfer: "Synchronisation",
-      settings: "Préférences"
+      settings: "Paramètres"
     },
     updates: {
       title: "Gestionnaire des Mises à Jour du Système",

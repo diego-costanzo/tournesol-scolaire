@@ -1,13 +1,13 @@
 import { SystemUpdate, VerifiedApp, TimetableSlot, HomeworkItem, StudentProfile, Language, CurriculumPack } from '../types';
 
 export const initialProfile: StudentProfile = {
-  name: "Studente",
+  name: "Élève",
   age: 13,
   schoolName: "Collège",
   schoolStage: "middle",
   gradeLevel: "4ème",
   avatar: "🌻",
-  language: "it", // Default iniziale in italiano; commutabile istantaneamente in francese con 1 clic
+  language: "fr", // Langue par défaut : Français (commutable instantanément en Italien avec le sélecteur)
   theme: "amber",
   operatingSystem: "debian",
   dyslexicFont: false,
@@ -499,13 +499,13 @@ export const initialHomework: HomeworkItem[] = [
     subject: "Mathématiques",
     subject_fr: "Mathématiques",
     subject_it: "Matematica",
-    title: "Esercizi 34 e 36 pag. 142 (Teorema di Pitagora)",
+    title: "Exercices 34 et 36 page 142 (Théorème de Pythagore)",
     title_fr: "Exercices 34 et 36 page 142 (Théorème de Pythagore)",
     title_it: "Esercizi 34 e 36 pag. 142 (Teorema di Pitagora)",
     description_fr: "Calculer la longueur de l'hypoténuse BC dans les triangles rectangles. Rédiger soigneusement : 'Dans le triangle ABC rectangle en A...'",
     description_it: "Calcolare la lunghezza dell'ipotenusa BC nei triangoli rettangoli. Redazione formale richiesta: 'Nel triangolo ABC rettangolo in A...'",
-    description: "Calcolare la lunghezza dell'ipotenusa BC",
-    dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Domani
+    description: "Calculer la longueur de l'hypoténuse BC dans les triangles rectangles",
+    dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Demain
     estimatedMinutes: 25,
     completed: false,
     priority: "high"
@@ -515,13 +515,13 @@ export const initialHomework: HomeworkItem[] = [
     subject: "Français",
     subject_fr: "Français",
     subject_it: "Francese",
-    title: "Lettura del racconto fantastico 'La Peur' di Maupassant",
+    title: "Lecture de la nouvelle fantastique 'La Peur' de Maupassant",
     title_fr: "Lecture de la nouvelle fantastique 'La Peur' de Maupassant",
     title_it: "Lettura del racconto fantastico 'La Peur' di Maupassant",
     description_fr: "Souligner les indices de l'étrange et repérer l'alternance entre l'imparfait (description) et le passé simple (actions soudaines).",
     description_it: "Sottolineare gli elementi del mistero e notare l'alternanza tra l'imparfait (descrizione) e il passé simple (azioni improvvise).",
-    description: "Analisi testo fantastico di Maupassant",
-    dueDate: new Date(Date.now() + 172800000).toISOString().split('T')[0], // Tra 2 giorni
+    description: "Lecture et analyse de la nouvelle fantastique de Maupassant",
+    dueDate: new Date(Date.now() + 172800000).toISOString().split('T')[0], // Dans 2 jours
     estimatedMinutes: 30,
     completed: false,
     priority: "medium"
@@ -531,13 +531,13 @@ export const initialHomework: HomeworkItem[] = [
     subject: "Physique-Chimie",
     subject_fr: "Physique-Chimie",
     subject_it: "Fisica & Chimica",
-    title: "Schema del circuito elettrico e Legge di Ohm (U = R × I)",
+    title: "Schéma d'un circuit électrique et Loi d'Ohm (U = R × I)",
     title_fr: "Schéma d'un circuit électrique et Loi d'Ohm (U = R × I)",
     title_it: "Schema del circuito elettrico e Legge di Ohm (U = R × I)",
     description_fr: "Calculer la tension aux bornes d'un résistor de 150 Ω traversé par un courant de 0.05 A.",
     description_it: "Calcolare la tensione ai capi di una resistenza da 150 Ω attraversata da una corrente di 0.05 A.",
-    description: "Calcolo della tensione con Legge di Ohm",
-    dueDate: new Date(Date.now() + 259200000).toISOString().split('T')[0], // Tra 3 giorni
+    description: "Calcul de la tension avec la Loi d'Ohm",
+    dueDate: new Date(Date.now() + 259200000).toISOString().split('T')[0], // Dans 3 jours
     estimatedMinutes: 20,
     completed: false,
     priority: "medium"
@@ -547,12 +547,12 @@ export const initialHomework: HomeworkItem[] = [
     subject: "Histoire-Géographie",
     subject_fr: "Histoire-Géographie",
     subject_it: "Storia & Geografia",
-    title: "Lezione sull'Illuminismo e l'Enciclopedia",
+    title: "Leçon sur le Siècle des Lumières et l'Encyclopédie",
     title_fr: "Leçon sur le Siècle des Lumières et l'Encyclopédie",
     title_it: "Lezione sull'Illuminismo e l'Enciclopedia",
     description_fr: "Apprendre les rôles de Voltaire, Rousseau et Diderot dans la contestation de la monarchie absolue au XVIIIe siècle.",
     description_it: "Studiare il ruolo di Voltaire, Rousseau e Diderot nella contestazione della monarchia assoluta nel XVIII secolo.",
-    description: "Studio dell'Illuminismo francese",
+    description: "Étude des philosophes des Lumières au XVIIIe siècle",
     dueDate: new Date(Date.now() + 345600000).toISOString().split('T')[0],
     estimatedMinutes: 20,
     completed: false,
@@ -563,12 +563,12 @@ export const initialHomework: HomeworkItem[] = [
     subject: "Italien (LV2)",
     subject_fr: "Italien (LV2)",
     subject_it: "Italiano (LV2)",
-    title: "Coniugazione al presente dei verbi regolari (-are, -ere, -ire)",
+    title: "Conjugaison au présent des verbes réguliers italiens (-are, -ere, -ire)",
     title_fr: "Conjugaison au présent des verbes réguliers italiens (-are, -ere, -ire)",
     title_it: "Coniugazione al presente dei verbi regolari (-are, -ere, -ire)",
     description_fr: "Compléter les 10 phrases d'exercices sur le cahier et réviser les auxiliaires 'essere' et 'avere'.",
     description_it: "Completare le 10 frasi sul quaderno e ripassare i verbi ausiliari 'essere' e 'avere'.",
-    description: "Esercizi verbi regolari italiani",
+    description: "Exercices sur les verbes réguliers italiens",
     dueDate: new Date(Date.now() + 432000000).toISOString().split('T')[0],
     estimatedMinutes: 15,
     completed: true,

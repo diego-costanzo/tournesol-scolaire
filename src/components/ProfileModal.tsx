@@ -49,7 +49,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [avatar, setAvatar] = useState(profile.avatar || '🌻');
   const [theme, setTheme] = useState<ThemeVariant>(profile.theme || 'amber');
   const [operatingSystem, setOperatingSystem] = useState<OperatingSystem>(profile.operatingSystem || 'debian');
-  const [language, setLanguage] = useState<Language>(profile.language || 'it');
+  const [language, setLanguage] = useState<Language>(profile.language || 'fr');
 
   if (!isOpen) return null;
 
@@ -80,7 +80,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       origin: { y: 0.6 }
     });
     onSaveProfile({
-      name: name.trim() || 'Studente',
+      name: name.trim() || (language === 'it' ? 'Studente' : 'Élève'),
       age,
       schoolName: schoolName.trim() || 'Collège Victor Hugo',
       schoolStage: selectedStage,

@@ -282,10 +282,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
           <Sparkles className="w-5 h-5 text-indigo-600" />
           <div>
             <h3 className="font-bold text-slate-900 text-sm">
-              {isIt ? 'Modalità Dati' : 'Mode des Données'}
+              {isIt ? 'Modalità Dati' : 'Mode de Fonctionnement & Données'}
             </h3>
             <p className="text-xs text-slate-500 font-medium">
-              {isIt ? 'Scegli se usare i tuoi dati personali o testare l\'app con dati finti' : 'Choisissez d\'utiliser vos propres données ou des données de test'}
+              {isIt ? 'Scegli se usare i tuoi dati personali o testare l\'app con dati finti' : 'Basculez entre votre propre carnet scolaire et le mode démonstration'}
             </p>
           </div>
         </div>
@@ -301,18 +301,18 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             }`}
           >
             <div className="flex items-center justify-between w-full">
-              <span className="text-sm font-bold text-slate-900">🧹 {isIt ? 'Inizia da zero (Dati Personali)' : 'Commencer de zéro (Données Personnelles)'}</span>
+              <span className="text-sm font-bold text-slate-900">🧹 {isIt ? 'Inizia da zero (Dati Personali)' : 'Mon Carnet Personnel (Vierge)'}</span>
               {profileMode === 'clean' && <Check className="w-4 h-4 text-indigo-600 shrink-0" />}
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              {isIt ? 'Pulisce l\'app, disabilita i dati demo e salva solo le tue modifiche.' : 'Nettoie l\'app et la prépare pour votre usage quotidien.'}
+              {isIt ? 'Pulisce l\'app, disabilita i dati demo e salva solo le tue modifiche.' : 'Espace de travail vierge dédié à vos vrais cours, devoirs et sauvegardes.'}
             </p>
           </button>
 
           <button
             type="button"
             onClick={() => {
-              if (window.confirm(isIt ? 'Sei sicuro? I tuoi dati attuali non salvati andranno persi.' : 'Êtes-vous sûr ? Vos données actuelles seront remplacées.')) {
+              if (window.confirm(isIt ? 'Ricaricare i dati di test? I dati attuali non salvati andranno persi.' : 'Recharger les données de démonstration ? Vos données non sauvegardées seront remplacées.')) {
                 onSetMode('demo');
               }
             }}
@@ -323,11 +323,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             }`}
           >
             <div className="flex items-center justify-between w-full">
-              <span className="text-sm font-bold text-slate-900">🔄 {isIt ? 'Ricarica dati di esempio (Demo)' : 'Recharger données de test (Démo)'}</span>
+              <span className="text-sm font-bold text-slate-900">🔄 {isIt ? 'Ricarica dati di esempio (Demo)' : 'Mode Démonstration (Exemples)'}</span>
               {profileMode === 'demo' && <Check className="w-4 h-4 text-indigo-600 shrink-0" />}
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              {isIt ? 'Popola l\'app con compiti e orari finti per vedere come funziona (nessun auto-salvataggio su disco).' : 'Remplit l\'app avec des données fictives pour tester (pas de sauvegarde auto).'}
+              {isIt ? 'Popola l\'app con compiti e orari finti per vedere come funziona (nessun auto-salvataggio su disco).' : 'Remplit l\'application avec des cours et devoirs types pour explorer sans risque.'}
             </p>
           </button>
         </div>

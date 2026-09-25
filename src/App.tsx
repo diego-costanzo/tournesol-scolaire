@@ -66,20 +66,30 @@ export default function App() {
     localStorage.setItem('tournesol_profile_mode', profileMode);
   }, [profileMode]);
 
-  // 1. Profile State
+  // 1. Profile State (Default is French for French audience, switchable to Italian for tests)
   const [profile, setProfile] = useState<StudentProfile>(() => {
     const saved = localStorage.getItem('tournesol_profile');
+    const userHasExplicitlyChosenLang = localStorage.getItem('tournesol_lang_chosen') === 'true';
     if (saved) {
       try { 
         const parsed = JSON.parse(saved);
-        if (parsed.name === 'Marieme Dieye' || parsed.name === 'Marieme') {
-          parsed.name = 'Studente';
+        if (parsed.name === 'Marieme Dieye' || parsed.name === 'Marieme' || parsed.name === 'Studente') {
+          parsed.name = 'Élève';
+        }
+        if (!userHasExplicitlyChosenLang) {
+          parsed.language = 'fr';
         }
         return { ...initialProfile, ...parsed };
       } catch {}
     }
     return initialProfile;
   });
+
+  const handleSetLanguage = (lang: Language) => {
+    localStorage.setItem('tournesol_lang_chosen', 'true');
+    setProfile(p => ({ ...p, language: lang }));
+    soundFx.playClick();
+  };
 
   useEffect(() => {
     localStorage.setItem('tournesol_profile', JSON.stringify(profile));
@@ -468,14 +478,17 @@ export default function App() {
 
   if (bootState === 'booting') {
     return (
-      <div className="min-h-screen bg-[#FFFDF0] flex flex-col items-center justify-center font-sans">
-        <div className="flex flex-col items-center animate-in fade-in zoom-in duration-700">
+      <div className="min-h-screen bg-[#FFFDF0] flex flex-col items-center justify-center font-sans p-4">
+        <div className="flex flex-col items-center animate-in fade-in zoom-in duration-700 text-center">
           <span className="text-6xl mb-4 animate-bounce">🌻</span>
           <h1 className="text-3xl font-black text-slate-800 mb-2 tracking-tight">Tournesol</h1>
-          <p className="text-sm font-bold text-amber-600 mb-6 bg-amber-100 px-3 py-1 rounded-full">
-            {isIt ? 'Verifica dati in corso...' : 'Vérification des données...'}
+          <p className="text-sm font-bold text-amber-700 mb-2 bg-amber-100/80 px-4 py-1.5 rounded-full border border-amber-200">
+            {isIt ? 'Verifica del quaderno in corso...' : 'Vérification du carnet de bord...'}
           </p>
-          <div className="flex gap-1">
+          <p className="text-xs text-slate-500 font-medium mb-6">
+            {isIt ? 'Caricamento dello spazio scolastico protetto' : 'Chargement de votre espace scolaire sécurisé'}
+          </p>
+          <div className="flex gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" style={{ animationDelay: '0ms' }}></div>
             <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" style={{ animationDelay: '150ms' }}></div>
             <div className="w-2.5 h-2.5 rounded-full bg-amber-600 animate-pulse" style={{ animationDelay: '300ms' }}></div>
@@ -488,15 +501,50 @@ export default function App() {
   if (bootState === 'welcome') {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-8 font-sans">
-        <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <div className="bg-amber-400 p-8 sm:p-10 text-center relative overflow-hidden">
+        <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700 border border-slate-100">
+          
+          {/* Top Bar with Language Selector (French by default, switchable for testing) */}
+          <div className="bg-amber-400/90 px-6 pt-5 pb-2 flex items-center justify-between">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/30 text-amber-950 text-xs font-bold">
+              <span>🌻</span>
+              <span>Tournesol Scolaire</span>
+            </span>
+
+            <div className="flex items-center bg-amber-500/40 p-0.5 rounded-xl text-xs font-bold border border-amber-600/30">
+              <button
+                type="button"
+                onClick={() => handleSetLanguage('fr')}
+                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                  !isIt ? 'bg-white text-slate-900 shadow-2xs font-black' : 'text-amber-950/70 hover:text-amber-950'
+                }`}
+                title="Passer en Français"
+              >
+                🇫🇷 FR
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSetLanguage('it')}
+                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                  isIt ? 'bg-white text-slate-900 shadow-2xs font-black' : 'text-amber-950/70 hover:text-amber-950'
+                }`}
+                title="Passa in Italiano"
+              >
+                🇮🇹 IT
+              </button>
+            </div>
+          </div>
+
+          {/* Banner Hero */}
+          <div className="bg-amber-400 px-8 pb-8 pt-3 sm:px-10 text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==')]"></div>
             <span className="text-7xl relative z-10 drop-shadow-md">🌻</span>
-            <h1 className="text-3xl sm:text-4xl font-black text-amber-950 mt-4 relative z-10">
-              {isIt ? 'Benvenuto in Tournesol!' : 'Bienvenue sur Tournesol !'}
+            <h1 className="text-3xl sm:text-4xl font-black text-amber-950 mt-3 relative z-10 tracking-tight">
+              {isIt ? 'Benvenuto su Tournesol!' : 'Bienvenue sur Tournesol !'}
             </h1>
-            <p className="text-amber-900 font-bold mt-2 text-sm sm:text-base relative z-10">
-              {isIt ? 'Il tuo quaderno scolastico locale e intelligente.' : 'Votre agenda scolaire local et intelligent.'}
+            <p className="text-amber-950/90 font-bold mt-2 text-sm sm:text-base relative z-10 max-w-lg mx-auto leading-relaxed">
+              {isIt 
+                ? 'Il tuo compagno scolastico libero, intelligente e 100% privato.' 
+                : 'Votre carnet de bord scolaire libre, intelligent et 100% privé.'}
             </p>
           </div>
           
@@ -504,12 +552,12 @@ export default function App() {
             <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
               <h3 className="font-bold text-slate-800 flex items-center gap-2 mb-2">
                 <span className="text-xl">👋</span> 
-                {isIt ? 'Come preferisci iniziare?' : 'Comment souhaitez-vous commencer ?'}
+                {isIt ? 'Come preferisci iniziare l\'anno?' : 'Comment souhaitez-vous démarrer ?'}
               </h3>
               <p className="text-sm text-slate-600 font-medium leading-relaxed">
                 {isIt 
-                  ? 'Abbiamo preparato un ambiente di test con dati finti (materie e compiti) per farti capire come funziona l\'app senza paura di sbagliare. Se sei già pronto, puoi invece iniziare subito con il tuo vero quaderno vuoto!'
-                  : 'Nous avons préparé un environnement de test avec des données factices. Vous pouvez explorer ou commencer directement avec votre propre profil.'}
+                  ? 'Tournesol funziona direttamente su questo dispositivo senza bisogno di account e senza pubblicità. Abbiamo preparato un ambiente con dati di prova (compiti e orari) per esplorare l\'app in libertà. Oppure puoi iniziare subito con il tuo quaderno personale pulito!'
+                  : 'Tournesol fonctionne entièrement sur votre appareil : aucune création de compte n\'est requise et aucune donnée n\'est collectée. Vous pouvez explorer l\'application avec un exemple prêt à l\'emploi, ou démarrer directement avec votre carnet personnel vierge.'}
               </p>
             </div>
 
@@ -519,15 +567,22 @@ export default function App() {
                   handleSetMode('demo');
                   setBootState('ready');
                 }}
-                className="group p-5 rounded-2xl border-2 border-indigo-100 hover:border-indigo-400 bg-indigo-50/50 hover:bg-indigo-50 transition-all text-left flex flex-col gap-2 cursor-pointer"
+                className="group p-5 rounded-2xl border-2 border-indigo-100 hover:border-indigo-400 bg-indigo-50/50 hover:bg-indigo-50 transition-all text-left flex flex-col gap-2.5 cursor-pointer shadow-2xs hover:shadow-xs"
               >
-                <span className="text-2xl group-hover:scale-110 transition-transform origin-left">👀</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl group-hover:scale-110 transition-transform origin-left">🧪</span>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-indigo-700 bg-indigo-100/80 px-2 py-0.5 rounded-md">
+                    {isIt ? 'Modalità Demo' : 'Mode Démo'}
+                  </span>
+                </div>
                 <div>
                   <h4 className="font-bold text-indigo-900 text-sm">
-                    {isIt ? 'Voglio solo curiosare' : 'Je veux juste explorer'}
+                    {isIt ? 'Esplora con dati di esempio' : 'Découvrir avec des exemples'}
                   </h4>
-                  <p className="text-xs text-indigo-700/80 font-semibold mt-1">
-                    {isIt ? '(Carica i dati di prova)' : '(Charger données de test)'}
+                  <p className="text-xs text-indigo-700/80 font-medium mt-1 leading-relaxed">
+                    {isIt 
+                      ? 'Compiti, orario scolastico e schede di studio finti per provare ogni funzione senza paura.' 
+                      : 'Cahier de textes, emploi du temps modèle et révisions pré-remplis pour tout essayer sans risque.'}
                   </p>
                 </div>
               </button>
@@ -538,22 +593,31 @@ export default function App() {
                   setBootState('ready');
                   setTimeout(() => setIsProfileModalOpen(true), 600);
                 }}
-                className="group p-5 rounded-2xl border-2 border-amber-100 hover:border-amber-400 bg-amber-50/50 hover:bg-amber-50 transition-all text-left flex flex-col gap-2 cursor-pointer"
+                className="group p-5 rounded-2xl border-2 border-amber-100 hover:border-amber-400 bg-amber-50/50 hover:bg-amber-50 transition-all text-left flex flex-col gap-2.5 cursor-pointer shadow-2xs hover:shadow-xs"
               >
-                <span className="text-2xl group-hover:scale-110 transition-transform origin-left">🚀</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl group-hover:scale-110 transition-transform origin-left">🚀</span>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded-md">
+                    {isIt ? 'Personale' : 'Personnel'}
+                  </span>
+                </div>
                 <div>
-                  <h4 className="font-bold text-amber-900 text-sm">
-                    {isIt ? 'Inizia la mia avventura' : 'Commencer mon aventure'}
+                  <h4 className="font-bold text-amber-950 text-sm">
+                    {isIt ? 'Inizia il mio quaderno' : 'Créer mon carnet personnel'}
                   </h4>
-                  <p className="text-xs text-amber-700/80 font-semibold mt-1">
-                    {isIt ? '(Crea quaderno vuoto)' : '(Créer profil vierge)'}
+                  <p className="text-xs text-amber-800/80 font-medium mt-1 leading-relaxed">
+                    {isIt 
+                      ? 'Crea un quaderno pulito: imposta la tua classe e inserisci i tuoi veri orari e compiti.' 
+                      : 'Carnet vierge prêt à l\'emploi : configurez votre classe et notez vos vrais cours dès aujourd\'hui.'}
                   </p>
                 </div>
               </button>
             </div>
             
-            <p className="text-center text-[11px] text-slate-400 font-bold uppercase tracking-wider">
-              {isIt ? 'Potrai sempre cambiare scelta dalle impostazioni' : 'Vous pourrez toujours changer depuis les paramètres'}
+            <p className="text-center text-xs text-slate-500 font-semibold">
+              {isIt 
+                ? '💡 Potrai sempre passare da una modalità all\'altra nella scheda Impostazioni' 
+                : '💡 Vous pourrez toujours basculer entre la démonstration et votre carnet dans l\'onglet Paramètres'}
             </p>
           </div>
         </div>
@@ -572,7 +636,7 @@ export default function App() {
           profile={profile}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          setLanguage={(lang: Language) => setProfile(p => ({ ...p, language: lang }))}
+          setLanguage={handleSetLanguage}
           setTheme={(themeVar: ThemeVariant) => setProfile(p => ({ ...p, theme: themeVar }))}
           toggleSound={() => setProfile(p => ({ ...p, soundEffects: !p.soundEffects }))}
           hasCriticalUpdates={hasCriticalUpdates}

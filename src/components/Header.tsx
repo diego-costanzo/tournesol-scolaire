@@ -82,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({
       label: isIt ? 'Orario' : 'Emploi du temps',
       shortLabel: isIt ? 'Orario' : 'Emploi',
       icon: CalendarDays,
-      sublabel: `Sett. ${profile.currentWeek}`
+      sublabel: isIt ? `Sett. ${profile.currentWeek}` : `Sem. ${profile.currentWeek}`
     },
     {
       id: 'moyenne',
