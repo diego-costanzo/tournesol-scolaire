@@ -21,7 +21,9 @@
 
 Tournesol è stato progettato secondo il principio **Zero Cloud / Privacy First**:
 - **Nessun server esterno:** L'applicazione non utilizza database online e non invia alcun dato su Internet.
-- **Salvataggio 100% Locale:** Tutti i compiti, l'orario scolastico, i voti e le statistiche dei quiz sono salvati **esclusivamente nella memoria privata del tuo browser/dispositivo**.
+- **Dati di Prova (Demo) vs Dati Personali:** Al primissimo avvio, l'app ti accoglie con una finestra di benvenuto che ti permette di scegliere se curiosare con dei **Dati di Prova** (compiti e orari finti per capire come funziona) oppure se **Iniziare la tua avventura**. Appena scegli di iniziare sul serio, l'app si svuota e da quel momento registra solo ed esclusivamente i tuoi veri compiti.
+- **Salvataggio 100% Locale (Browser):** Se usi la versione web pubblica, tutti i compiti e i voti sono salvati **esclusivamente nella memoria privata del tuo dispositivo**.
+- **Super Sicurezza su Disco (Esecuzione Locale):** Se decidi di scaricare il progetto e avviare l'app sul tuo PC (tramite gli script `avvia_windows` / `avvia_mac_linux`), si attiva automaticamente un backup fisico su disco. Ogni 3,5 secondi, l'app scrive i tuoi dati nel file `dati_salvati_pc/tournesol_dati_disco.json` sul tuo hard disk. Questo ti rende totalmente immune a qualsiasi svuotamento involontario della cronologia del browser!
 - **Come passare i dati tra più dispositivi (PC ↔ Tablet ↔ Smartphone):** Poiché l'app non salva dati su server remoti, per sincronizzare o trasferire i tuoi compiti da un dispositivo all'altro:
   1. Apri la scheda **Impostazioni** sul primo dispositivo.
   2. Clicca su **"Esporta Backup (.json)"** (scarica un file leggero in un secondo).

@@ -21,7 +21,9 @@
 
 Tournesol a été conçu selon le principe fondamental du **Zero Cloud / Privacy First** :
 - **Aucun serveur distant :** L'application n'utilise aucune base de données externe et ne transmet aucune information sur Internet.
-- **Stockage 100% Local :** Tous les devoirs, les créneaux de cours, les notes et les statistiques de révision sont enregistrés **exclusivement dans la mémoire de votre appareil** (navigateur).
+- **Données de Test vs Données Personnelles :** Lors de la première ouverture, l'application vous accueille chaleureusement et vous propose d'explorer un **Mode Démo** (avec des devoirs et horaires factices pour découvrir l'interface) ou de **Commencer de Zéro**. Dès que vous commencez sérieusement, les données de test sont supprimées et vos données personnelles s'enregistrent en toute sécurité.
+- **Stockage 100% Local (Navigateur) :** Si vous utilisez la version Web, tous vos devoirs et notes sont enregistrés **exclusivement dans la mémoire de votre appareil**.
+- **Sauvegarde Physique (Exécution depuis le code source) :** Si vous exécutez l'application localement sur votre ordinateur (via les scripts `avvia_mac_linux` / `avvia_windows`), Tournesol active une sauvegarde automatique directement sur votre disque dur (`dati_salvati_pc/tournesol_dati_disco.json`). Cette méthode garantit une persistance absolue, totalement immunisée contre le nettoyage du cache du navigateur !
 - **Synchronisation entre plusieurs appareils :** Comme l'application ne stocke rien en ligne, pour transférer vos données d'un appareil à l'autre (par exemple de votre PC vers votre tablette ou smartphone) :
   1. Allez dans l'onglet **Préférences / Sauvegarde** de l'appareil source.
   2. Cliquez sur **"Exporter Sauvegarde (.json)"** (ou téléchargez le fichier en un clic).
