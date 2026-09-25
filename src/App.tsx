@@ -41,6 +41,22 @@ import { systemBridge } from './services/systemBridge';
 import { backupService } from './services/backupService';
 
 export default function App() {
+  const [bootState, setBootState] = useState<'booting' | 'welcome' | 'ready'>('booting');
+
+  useEffect(() => {
+    // Fake loading per rassicurare l'utente sulla verifica dei dati
+    const checkData = async () => {
+      await new Promise(r => setTimeout(r, 1200));
+      const hasChosenMode = localStorage.getItem('tournesol_mode_selected');
+      if (hasChosenMode === 'true') {
+        setBootState('ready');
+      } else {
+        setBootState('welcome');
+      }
+    };
+    checkData();
+  }, []);
+
   // 0. Profile Mode (demo vs clean)
   const [profileMode, setProfileMode] = useState<'demo' | 'clean'>(() => {
     return (localStorage.getItem('tournesol_profile_mode') as 'demo' | 'clean') || 'demo';
@@ -371,6 +387,7 @@ export default function App() {
   };
 
   const handleSetMode = (mode: 'demo' | 'clean') => {
+    localStorage.setItem('tournesol_mode_selected', 'true');
     setProfileMode(mode);
     if (mode === 'clean') {
       setHomework([]);
@@ -448,6 +465,101 @@ export default function App() {
 
   const hasCriticalUpdates = updates.some(u => u.severity === 'critical-security');
   const pendingHomeworkCount = homework.filter(h => !h.completed).length;
+
+  if (bootState === 'booting') {
+    return (
+      <div className="min-h-screen bg-[#FFFDF0] flex flex-col items-center justify-center font-sans">
+        <div className="flex flex-col items-center animate-in fade-in zoom-in duration-700">
+          <span className="text-6xl mb-4 animate-bounce">🌻</span>
+          <h1 className="text-3xl font-black text-slate-800 mb-2 tracking-tight">Tournesol</h1>
+          <p className="text-sm font-bold text-amber-600 mb-6 bg-amber-100 px-3 py-1 rounded-full">
+            {isIt ? 'Verifica dati in corso...' : 'Vérification des données...'}
+          </p>
+          <div className="flex gap-1">
+            <div className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-amber-600 animate-pulse" style={{ animationDelay: '300ms' }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (bootState === 'welcome') {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-8 font-sans">
+        <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
+          <div className="bg-amber-400 p-8 sm:p-10 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==')]"></div>
+            <span className="text-7xl relative z-10 drop-shadow-md">🌻</span>
+            <h1 className="text-3xl sm:text-4xl font-black text-amber-950 mt-4 relative z-10">
+              {isIt ? 'Benvenuto in Tournesol!' : 'Bienvenue sur Tournesol !'}
+            </h1>
+            <p className="text-amber-900 font-bold mt-2 text-sm sm:text-base relative z-10">
+              {isIt ? 'Il tuo quaderno scolastico locale e intelligente.' : 'Votre agenda scolaire local et intelligent.'}
+            </p>
+          </div>
+          
+          <div className="p-6 sm:p-10 space-y-6">
+            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+              <h3 className="font-bold text-slate-800 flex items-center gap-2 mb-2">
+                <span className="text-xl">👋</span> 
+                {isIt ? 'Come preferisci iniziare?' : 'Comment souhaitez-vous commencer ?'}
+              </h3>
+              <p className="text-sm text-slate-600 font-medium leading-relaxed">
+                {isIt 
+                  ? 'Abbiamo preparato un ambiente di test con dati finti (materie e compiti) per farti capire come funziona l\'app senza paura di sbagliare. Se sei già pronto, puoi invece iniziare subito con il tuo vero quaderno vuoto!'
+                  : 'Nous avons préparé un environnement de test avec des données factices. Vous pouvez explorer ou commencer directement avec votre propre profil.'}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button
+                onClick={() => {
+                  handleSetMode('demo');
+                  setBootState('ready');
+                }}
+                className="group p-5 rounded-2xl border-2 border-indigo-100 hover:border-indigo-400 bg-indigo-50/50 hover:bg-indigo-50 transition-all text-left flex flex-col gap-2 cursor-pointer"
+              >
+                <span className="text-2xl group-hover:scale-110 transition-transform origin-left">👀</span>
+                <div>
+                  <h4 className="font-bold text-indigo-900 text-sm">
+                    {isIt ? 'Voglio solo curiosare' : 'Je veux juste explorer'}
+                  </h4>
+                  <p className="text-xs text-indigo-700/80 font-semibold mt-1">
+                    {isIt ? '(Carica i dati di prova)' : '(Charger données de test)'}
+                  </p>
+                </div>
+              </button>
+
+              <button
+                onClick={() => {
+                  handleSetMode('clean');
+                  setBootState('ready');
+                  setTimeout(() => setIsProfileModalOpen(true), 600);
+                }}
+                className="group p-5 rounded-2xl border-2 border-amber-100 hover:border-amber-400 bg-amber-50/50 hover:bg-amber-50 transition-all text-left flex flex-col gap-2 cursor-pointer"
+              >
+                <span className="text-2xl group-hover:scale-110 transition-transform origin-left">🚀</span>
+                <div>
+                  <h4 className="font-bold text-amber-900 text-sm">
+                    {isIt ? 'Inizia la mia avventura' : 'Commencer mon aventure'}
+                  </h4>
+                  <p className="text-xs text-amber-700/80 font-semibold mt-1">
+                    {isIt ? '(Crea quaderno vuoto)' : '(Créer profil vierge)'}
+                  </p>
+                </div>
+              </button>
+            </div>
+            
+            <p className="text-center text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+              {isIt ? 'Potrai sempre cambiare scelta dalle impostazioni' : 'Vous pourrez toujours changer depuis les paramètres'}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
