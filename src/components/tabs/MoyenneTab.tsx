@@ -63,7 +63,7 @@ export const MoyenneTab: React.FC<MoyenneTabProps> = ({
       totalCoeff += g.coefficient;
     });
     
-    if (totalCoeff === 0) return 0;
+    if (totalCoeff === 0) return '0.00';
     return (totalScore / totalCoeff).toFixed(2);
   };
 
@@ -254,7 +254,7 @@ export const MoyenneTab: React.FC<MoyenneTabProps> = ({
                       <button
                         onClick={() => {
                           onDeleteGrade(grade.id);
-                          soundFx.playPop();
+                          soundFx.playClick();
                         }}
                         className="w-8 h-8 rounded-full flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition opacity-0 group-hover:opacity-100"
                         title={isIt ? 'Elimina' : 'Supprimer'}

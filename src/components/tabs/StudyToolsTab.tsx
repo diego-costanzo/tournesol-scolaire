@@ -26,7 +26,10 @@ import {
   Zap,
   HelpCircle,
   Cpu,
-  Trophy
+  Trophy,
+  Brain,
+  Volume2,
+  Square
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { StudentProfile, HomeworkItem, GradeCycle, FrenchGradeLevel } from '../../types';
@@ -45,8 +48,10 @@ import { PeriodicTableSection } from '../study/PeriodicTableSection';
 import { HistoryTimelineSection } from '../study/HistoryTimelineSection';
 import { TechAlgorithmSection } from '../study/TechAlgorithmSection';
 import { QuizLaboratorySection } from '../study/QuizLaboratorySection';
+import { SmartReviewSection } from '../study/SmartReviewSection';
 import { getSmartStudyAid } from '../../services/smartContextEngine';
 import { adaptiveTimeEngine } from '../../services/adaptiveTimeEngine';
+import { speech } from '../../utils/speech';
 
 interface StudyToolsTabProps {
   profile: StudentProfile;
@@ -78,7 +83,7 @@ export const StudyToolsTab: React.FC<StudyToolsTabProps> = ({
   });
 
   const [subTool, setSubTool] = useState<
-    'math' | 'science' | 'french' | 'history' | 'tech' | 'languages' | 'quiz' | 'method' | 'serenity' | 'notes'
+    'math' | 'science' | 'french' | 'history' | 'tech' | 'languages' | 'quiz' | 'review' | 'method' | 'serenity' | 'notes'
   >('math');
 
   // Automatic subject tab switching when an active homework is selected
@@ -161,6 +166,16 @@ export const StudyToolsTab: React.FC<StudyToolsTabProps> = ({
         colors: ['#F59E0B', '#FBBF24', '#10B981']
       });
       if (timerMode === 'study') {
+        // Free study (no homework selected) is still real study time: log it so
+        // the adaptive pacing engine learns the student's rhythm too.
+        if (!activeStudyHomework) {
+          adaptiveTimeEngine.recordSession({
+            subject: isIt ? 'Studio libero' : 'Révision libre',
+            taskTitle: isIt ? 'Sessione di concentrazione' : 'Session de concentration',
+            estimatedMinutes: defaultMinutes,
+            actualMinutes: Math.max(1, defaultMinutes)
+          });
+        }
         setTimerMode('break');
         setTimerSeconds(5 * 60);
         setSessionsCompleted((c) => c + 1);
@@ -551,6 +566,7 @@ export const StudyToolsTab: React.FC<StudyToolsTabProps> = ({
     );
   });
   const [noteSaved, setNoteSaved] = useState(false);
+  const [readingNotes, setReadingNotes] = useState(false);
   const saveNotes = () => {
     localStorage.setItem('tournesol_study_notes', personalNote);
     soundFx.playSuccess();
@@ -832,6 +848,7 @@ export const StudyToolsTab: React.FC<StudyToolsTabProps> = ({
           { id: 'science', label: isIt ? 'Scienze & Fisica' : 'Sciences & SVT', icon: Atom },
           { id: 'history', label: isIt ? 'Storia & Geo' : 'Histoire-Géo', icon: History },
           { id: 'quiz', label: isIt ? 'Quiz & Verifiche' : 'Quiz & Brevet', icon: Trophy },
+          { id: 'review', label: isIt ? 'Ripasso' : 'Révision', icon: Brain },
           { id: 'tech', label: isIt ? 'Informatica' : 'Techno & Code', icon: Cpu },
           { id: 'languages', label: isIt ? 'Inglese' : 'Anglais', icon: Globe2 },
           { id: 'notes', label: isIt ? 'Appunti' : 'Notes', icon: FileText },
@@ -1088,7 +1105,7 @@ export const StudyToolsTab: React.FC<StudyToolsTabProps> = ({
             )}
 
             {pythMode === 'reciproque' && (
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="text-[11px] font-bold text-slate-700 block mb-1">Côté 1 (cm) :</label>
                   <input
@@ -1892,6 +1909,13 @@ export const StudyToolsTab: React.FC<StudyToolsTabProps> = ({
       )}
 
       {/* ============================================================ */}
+      {/* 10b. SMART REVIEW (Spaced Repetition, SM-2) */}
+      {/* ============================================================ */}
+      {subTool === 'review' && (
+        <SmartReviewSection profile={profile} />
+      )}
+
+      {/* ============================================================ */}
       {/* 11. METHODOLOGY & EXAM TIPS (Anti-Stress) */}
       {/* ============================================================ */}
       {subTool === 'method' && (
@@ -2012,6 +2036,25 @@ export const StudyToolsTab: React.FC<StudyToolsTabProps> = ({
             >
               {noteSaved ? <span>✓ {isIt ? 'Salvato !' : 'Enregistré !'}</span> : <span>💾 {isIt ? 'Salva Appunti' : 'Enregistrer'}</span>}
             </button>
+
+            {speech.isSupported() && (
+              <button
+                onClick={() => {
+                  if (readingNotes) {
+                    speech.stop();
+                    setReadingNotes(false);
+                    return;
+                  }
+                  const started = speech.speak(personalNote, profile.language, 0.95, () => setReadingNotes(false));
+                  setReadingNotes(started);
+                }}
+                className="px-3 py-2 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-950 font-black text-xs border border-sky-300 shadow-xs cursor-pointer flex items-center gap-1.5"
+                title={isIt ? 'Ascolta i tuoi appunti (utile per la dislessia)' : 'Écouter vos notes (utile pour la dyslexie)'}
+              >
+                {readingNotes ? <Square className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                <span>{readingNotes ? (isIt ? 'Ferma' : 'Arrêter') : (isIt ? 'Ascolta' : 'Écouter')}</span>
+              </button>
+            )}
           </div>
 
           <textarea

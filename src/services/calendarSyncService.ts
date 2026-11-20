@@ -24,6 +24,20 @@ const BYDAY_MAP: Record<string, 'lundi' | 'mardi' | 'mercredi' | 'jeudi' | 'vend
   FR: 'vendredi'
 };
 
+/** RFC 5545 text values are escaped: `\\n`, `\\,`, `\\;` and `\\\\`. */
+const unescapeICalText = (value: string): string =>
+  String(value)
+    .replace(/\\[nN]/g, '\n')
+    .replace(/\\,/g, ',')
+    .replace(/\\;/g, ';')
+    .replace(/\\\\/g, '\\');
+
+/** Pronote usually stores the teacher inside the event description. */
+const extractTeacher = (description: string): string => {
+  const match = description.match(/(?:prof(?:esseur)?|enseignant)\s*[:\-]\s*([^\n\r]{2,60})/i);
+  return match ? match[1].trim() : '';
+};
+
 const SUBJECT_COLOR_MAP: Record<string, string> = {
   math: 'bg-amber-100 text-amber-900 border-amber-300',
   matematica: 'bg-amber-100 text-amber-900 border-amber-300',
@@ -112,9 +126,9 @@ export class CalendarSyncService {
     slots: Omit<TimetableSlot, 'id'>[],
     homework: Omit<HomeworkItem, 'id' | 'completed'>[]
   ) {
-    const summary = evt['SUMMARY'] || 'Cours';
-    const description = evt['DESCRIPTION'] || '';
-    const location = evt['LOCATION'] || 'Salle de cours';
+    const summary = unescapeICalText(evt['SUMMARY'] || 'Cours').trim();
+    const description = unescapeICalText(evt['DESCRIPTION'] || '');
+    const location = unescapeICalText(evt['LOCATION'] || '').trim();
     const dtstart = evt['DTSTART'] || '';
     const dtend = evt['DTEND'] || '';
     const rrule = evt['RRULE'] || '';

@@ -144,17 +144,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
 
   const handleExportData = () => {
     soundFx.playClick();
-    const dataToExport = {
-      version: '1.0.0',
-      exportDate: new Date().toISOString(),
-      profile,
-      homework,
-      timetable,
-      studyNotes: localStorage.getItem('tournesol_study_notes') || '',
-      installedPacks: localStorage.getItem('tournesol_installed_packs') || '[]',
-      studyHistory: localStorage.getItem('tournesol_study_history') || '[]',
-      quizMistakes: localStorage.getItem('tournesol_quiz_mistakes') || '[]'
-    };
+    const dataToExport = backupService.createFullBackupPayload(profile, homework, timetable);
     const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

@@ -169,9 +169,7 @@ export const Header: React.FC<HeaderProps> = ({
                   isActive ? theme.headingText : 'text-slate-500'
                 }`} />
                 
-                {isActive && (
-                  <span>{item.shortLabel}</span>
-                )}
+                <span className={`${isActive ? 'inline' : 'hidden xl:inline'} truncate`}>{item.shortLabel}</span>
 
                 {item.badge && (
                   <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black leading-none ${
@@ -284,7 +282,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Mobile Horizontal Navigation Track (< md) */}
-      <div className="md:hidden border-t border-slate-200/60 bg-white/95 backdrop-blur-xs px-2 py-1.5 flex items-center justify-start sm:justify-around gap-1 overflow-x-auto scrollbar-none w-full">
+      <div className="md:hidden border-t border-slate-200/60 bg-white/95 backdrop-blur-xs px-1.5 py-1.5 flex items-stretch justify-between gap-0.5 overflow-x-auto scrollbar-none w-full">
         {allNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -292,7 +290,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               key={item.id}
               onClick={() => handleTabChange(item.id)}
-              className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition cursor-pointer shrink-0 min-w-[50px] ${
+              className={`flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition cursor-pointer flex-1 min-w-0 ${
                 isActive
                   ? 'bg-amber-100/90 text-amber-950 font-black'
                   : 'text-slate-500 hover:text-slate-900 font-semibold'
@@ -308,7 +306,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                 )}
               </div>
-              <span className="text-[10px] mt-0.5 tracking-tight truncate max-w-[62px]">
+              <span className="text-[10px] mt-0.5 tracking-tight truncate w-full text-center">
                 {item.shortLabel}
               </span>
             </button>

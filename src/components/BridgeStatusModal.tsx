@@ -95,8 +95,8 @@ export const BridgeStatusModal: React.FC<BridgeStatusModalProps> = ({
               </div>
               <p className="text-xs text-slate-500 font-medium">
                 {isIt 
-                  ? 'Permette a Tournesol di leggere RAM, software e aggiornamenti senza terminale' 
-                  : 'Permet à Tournesol de vérifier RAM, logiciels et paquets sans terminal'}
+                  ? 'Salva i tuoi dati sul PC e aggiorna il calendario della scuola, senza terminale' 
+                  : 'Enregistre vos données sur le PC et actualise l\'emploi du temps, sans terminal'}
               </p>
             </div>
           </div>
@@ -190,8 +190,8 @@ export const BridgeStatusModal: React.FC<BridgeStatusModalProps> = ({
                 <span>{isIt ? 'Usa Python standard già presente nel sistema. Non consuma risorse.' : 'Utilise le Python standard du système sans gaspillage.'}</span>
               </div>
               <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-                <strong className="block text-slate-900 mb-0.5">{isIt ? '🛡️ PolicyKit Grafico' : '🛡️ PolicyKit Graphique'}</strong>
-                <span>{isIt ? 'Le autorizzazioni usano la normale finestra di sistema di Debian/KDE.' : 'Les autorisations utilisent la boîte de dialogue native.'}</span>
+                <strong className="block text-slate-900 mb-0.5">{isIt ? '🔐 File privati' : '🔐 Fichiers privés'}</strong>
+                <span>{isIt ? 'Dati e link della scuola restano in ~/.tournesol, leggibili solo dal tuo utente.' : 'Données et lien de l\'école restent dans ~/.tournesol, lisibles par vous seul.'}</span>
               </div>
             </div>
           </div>
@@ -221,8 +221,8 @@ export const BridgeStatusModal: React.FC<BridgeStatusModalProps> = ({
             </div>
             <p className="text-[11px] text-slate-500 font-medium">
               {isIt 
-                ? 'Incolla questo comando nel Terminale. Lo script si avvierà in background all\'accensione del PC.'
-                : 'Collez cette ligne dans le Terminal. Le démon s\'exécutera silencieusement en tâche de fond.'}
+                ? 'Incolla il comando nel Terminale una sola volta: installa il connettore, lo fa ripartire da solo a ogni login e salva i tuoi dati in ~/.tournesol sul tuo PC.'
+                : 'Collez la commande dans le Terminal une seule fois : le connecteur est installé, redémarre seul à chaque connexion et enregistre vos données dans ~/.tournesol sur votre PC.'}
             </p>
           </div>
 

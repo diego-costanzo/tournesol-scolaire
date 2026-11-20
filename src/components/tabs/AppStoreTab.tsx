@@ -257,7 +257,7 @@ export const AppStoreTab: React.FC<AppStoreTabProps> = ({
                 setSubTab('apps');
                 soundFx.playClick();
               }}
-              className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap ${
+              className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-center ${
                 subTab === 'apps'
                   ? 'bg-white text-slate-900 shadow-xs font-black'
                   : 'text-slate-600 hover:text-slate-900'
@@ -272,7 +272,7 @@ export const AppStoreTab: React.FC<AppStoreTabProps> = ({
                 setSubTab('curriculum-packs');
                 soundFx.playClick();
               }}
-              className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap ${
+              className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-center ${
                 subTab === 'curriculum-packs'
                   ? 'bg-white text-slate-900 shadow-xs font-black'
                   : 'text-slate-600 hover:text-slate-900'
@@ -287,7 +287,7 @@ export const AppStoreTab: React.FC<AppStoreTabProps> = ({
                 setSubTab('github-discovery');
                 soundFx.playClick();
               }}
-              className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap ${
+              className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-center ${
                 subTab === 'github-discovery'
                   ? 'bg-white text-slate-900 shadow-xs font-black'
                   : 'text-slate-600 hover:text-slate-900'

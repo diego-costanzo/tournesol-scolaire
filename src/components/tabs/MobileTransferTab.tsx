@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { 
+  AlertCircle,
   Share2, 
   FileText, 
   Image as ImageIcon, 
@@ -18,13 +19,17 @@ import {
   Trash2,
   RefreshCw,
   Smartphone,
-  ShieldCheck
+  ShieldCheck,
+  Laptop,
+  Loader2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { StudentProfile, HomeworkItem, TimetableSlot, GradeCycle } from '../../types';
 import { translations } from '../../i18n/translations';
 import { soundFx } from '../../utils/audio';
 import { calendarSyncService } from '../../services/calendarSyncService';
+import { schoolSyncService } from '../../services/schoolSyncService';
+import { schoolSyncState } from '../../services/schoolSyncState';
 import { CalendarSyncModal } from '../study/CalendarSyncModal';
 
 interface MobileTransferTabProps {
@@ -105,6 +110,9 @@ export const MobileTransferTab: React.FC<MobileTransferTabProps> = ({
   // Pronote iCal state
   const [icalContent, setIcalContent] = useState('');
   const [pronoteSuccess, setPronoteSuccess] = useState(false);
+  const [pronoteError, setPronoteError] = useState<string | null>(null);
+  const [icalUrl, setIcalUrl] = useState('');
+  const [bridgeBusy, setBridgeBusy] = useState(false);
 
   // Copy state for export
   const [copiedExport, setCopiedExport] = useState(false);
@@ -278,23 +286,77 @@ export const MobileTransferTab: React.FC<MobileTransferTabProps> = ({
   };
 
   const handleImportPronote = () => {
-    soundFx.playSuccess();
-    if (icalContent.trim().includes('BEGIN:')) {
-      const parsed = calendarSyncService.parseICalString(icalContent);
-      if (onBatchAddSlots && parsed.timetableSlots.length > 0) {
-        onBatchAddSlots(parsed.timetableSlots);
-      }
-      if (onAddBatchHomework && parsed.homeworkItems.length > 0) {
-        onAddBatchHomework(parsed.homeworkItems);
-      }
-    } else {
-      const sample = calendarSyncService.generateCurriculumSample(currentGradeCycle);
-      if (onBatchAddSlots) {
-        onBatchAddSlots(sample.slots);
-      }
-      if (onAddBatchHomework) {
-        onAddBatchHomework(sample.homework);
-      }
+    soundFx.playClick();
+
+    if (!icalContent.trim()) {
+      setPronoteError(isIt ? 'Incolla il contenuto .ics esportato da Pronote.' : 'Collez le contenu .ics exporté depuis Pronote.');
+      return;
+    }
+
+    if (!icalContent.trim().includes('BEGIN:')) {
+      // A browser cannot fetch a school URL directly (ENT auth + CORS). Never fabricate data.
+      setPronoteError(
+        isIt
+          ? 'Il browser non può scaricare direttamente un URL Pronote. Esporta il file .ics da Pronote (Mes données > Export iCal) e incolla il suo contenuto.'
+          : 'Le navigateur ne peut pas télécharger une URL Pronote. Exportez le fichier .ics depuis Pronote (Mes données > Export iCal) puis collez son contenu.'
+      );
+      return;
+    }
+
+    setPronoteError(null);
+    const parsed = calendarSyncService.parseICalString(icalContent);
+    if (onBatchAddSlots && parsed.timetableSlots.length > 0) {
+      onBatchAddSlots(parsed.timetableSlots);
+    }
+    if (onAddBatchHomework && parsed.homeworkItems.length > 0) {
+      onAddBatchHomework(parsed.homeworkItems);
+    }
+
+    setPronoteSuccess(true);
+    confetti({
+      particleCount: 50,
+      spread: 60,
+      colors: ['#F59E0B', '#10B981', '#3B82F6']
+    });
+    setTimeout(() => setPronoteSuccess(false), 4000);
+  };
+
+  /** Sync directly from Pronote through the local bridge (data stays on this PC). */
+  const handleBridgeSync = async () => {
+    if (bridgeBusy) return;
+    soundFx.playClick();
+    setBridgeBusy(true);
+    setPronoteError(null);
+
+    const result = await schoolSyncService.syncFromPronote(icalUrl);
+
+    if (!result.ok || !result.ics) {
+      setPronoteError(
+        result.error === 'invalid-url'
+          ? (isIt ? 'Inserisci un link https valido del tuo calendario Pronote.' : 'Saisissez un lien https valide de votre calendrier Pronote.')
+          : result.error === 'bridge-offline'
+            ? (isIt ? 'Il Bridge PC non è attivo. Attivalo dal pannello « Sicurezza & Sistema » e riprova.' : 'Le Bridge PC n\'est pas actif. Activez-le dans « Sécurité & Système ».')
+            : (isIt ? 'Download non riuscito: controlla il link o la connessione.' : 'Téléchargement impossible : vérifiez le lien ou la connexion.')
+      );
+      setBridgeBusy(false);
+      return;
+    }
+
+    const parsed = calendarSyncService.parseICalString(result.ics);
+    if (onBatchAddSlots && parsed.timetableSlots.length > 0) {
+      onBatchAddSlots(parsed.timetableSlots);
+    }
+    if (onAddBatchHomework && parsed.homeworkItems.length > 0) {
+      onAddBatchHomework(parsed.homeworkItems);
+    }
+
+    setBridgeBusy(false);
+    schoolSyncState.markSuccess();
+    schoolSyncState.setConfigured(true);
+
+    if (parsed.timetableSlots.length === 0 && parsed.homeworkItems.length === 0) {
+      setPronoteError(isIt ? 'Calendario valido ma senza lezioni o compiti riconoscibili.' : 'Calendrier valide mais aucun cours/devoir reconnu.');
+      return;
     }
 
     setPronoteSuccess(true);
@@ -349,11 +411,11 @@ export const MobileTransferTab: React.FC<MobileTransferTabProps> = ({
       </div>
 
       {/* 2. Clean Segmented Navigation */}
-      <div className="flex flex-wrap items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+      <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
         {[
-          { id: 'text', label: isIt ? '📝 Incolla Compiti (Testo / Messaggi)' : '📝 Importer Devoirs (Texte)', icon: FileText },
-          { id: 'pronote', label: isIt ? '📅 Pronote & Calendario' : '📅 Pronote & Agenda', icon: Calendar },
-          { id: 'guide', label: isIt ? '📱 Come Collegare il Telefono & Foto' : '📱 Connexion Smartphone & Photos', icon: Smartphone }
+          { id: 'text', label: isIt ? 'Compiti (testo)' : 'Devoirs (texte)', icon: FileText },
+          { id: 'pronote', label: isIt ? 'Pronote' : 'Pronote', icon: Calendar },
+          { id: 'guide', label: isIt ? 'Telefono & Foto' : 'Téléphone & Photos', icon: Smartphone }
         ].map((tab) => {
           const isActive = activeSubTab === tab.id;
           return (
@@ -363,13 +425,14 @@ export const MobileTransferTab: React.FC<MobileTransferTabProps> = ({
                 soundFx.playClick();
                 setActiveSubTab(tab.id as any);
               }}
-              className={`flex-1 sm:flex-initial py-2 px-3.5 rounded-lg text-xs font-bold transition cursor-pointer whitespace-nowrap text-center ${
+              className={`py-2 px-2 rounded-lg text-[11px] sm:text-xs font-bold transition cursor-pointer text-center leading-tight min-w-0 flex items-center justify-center gap-1.5 ${
                 isActive
                   ? 'bg-white text-slate-900 shadow-xs font-black'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              {tab.label}
+              <tab.icon className="w-3.5 h-3.5 shrink-0 hidden sm:block" />
+              <span className="truncate">{tab.label}</span>
             </button>
           );
         })}
@@ -596,15 +659,64 @@ export const MobileTransferTab: React.FC<MobileTransferTabProps> = ({
             </p>
           </div>
 
+          {/* Recommended: automatic sync through the local bridge (data stays on this PC) */}
+          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 space-y-3">
+            <div className="flex items-start gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <h4 className="text-xs font-black text-emerald-950">
+                  {isIt ? 'Sincronizzazione automatica dal PC (consigliata)' : 'Synchronisation automatique depuis le PC'}
+                </h4>
+                <p className="text-[11px] text-emerald-900 font-medium leading-snug">
+                  {isIt
+                    ? 'Il Bridge scarica il link e salva tutto sul tuo PC: i dati non lasciano il dispositivo.'
+                    : 'Le Bridge télécharge le lien et stocke tout sur votre PC : les données ne quittent pas l\'appareil.'}
+                </p>
+              </div>
+            </div>
+
+            <label htmlFor="pronote-ical-url" className="text-xs font-bold text-emerald-950 block">
+              {isIt ? 'Link iCal privato (Pronote → Mes données → Export iCal)' : 'Lien iCal privé (Pronote → Mes données → Export iCal)'}
+            </label>
+            <input
+              id="pronote-ical-url"
+              type="url"
+              inputMode="url"
+              autoComplete="off"
+              spellCheck={false}
+              value={icalUrl}
+              onChange={(e) => {
+                setIcalUrl(e.target.value);
+                setPronoteError(null);
+              }}
+              placeholder="https://mon-ent.fr/ical/..."
+              className="w-full px-3.5 py-2 rounded-xl border border-emerald-300 bg-white text-xs font-mono text-slate-900 focus:outline-none focus:border-emerald-500"
+            />
+
+            <button
+              type="button"
+              onClick={handleBridgeSync}
+              disabled={bridgeBusy || !icalUrl.trim()}
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-black text-xs shadow-xs transition cursor-pointer flex items-center justify-center gap-2"
+            >
+              {bridgeBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Laptop className="w-4 h-4" />}
+              <span>
+                {bridgeBusy
+                  ? (isIt ? 'Sincronizzazione...' : 'Synchronisation...')
+                  : (isIt ? 'Sincronizza dal PC' : 'Synchroniser depuis le PC')}
+              </span>
+            </button>
+          </div>
+
           <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
             <label className="text-xs font-bold text-slate-700 block">
-              {isIt ? 'Incolla il link iCal Pronote (URL Agenda) :' : 'Lien iCal Pronote (URL Agenda) :'}
+              {isIt ? 'Oppure incolla il contenuto .ics esportato da Pronote :' : 'Ou collez le contenu .ics exporté depuis Pronote :'}
             </label>
             <input
               type="text"
               value={icalContent}
               onChange={(e) => setIcalContent(e.target.value)}
-              placeholder="https://...index-education.net/pronote/ical/Agenda.ics?token=..."
+              placeholder="BEGIN:VCALENDAR..."
               className="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs font-mono text-slate-900"
             />
 
@@ -645,6 +757,13 @@ export const MobileTransferTab: React.FC<MobileTransferTabProps> = ({
                     ? '✅ Sincronizzazione riuscita! Orario e compiti aggiornati.' 
                     : '✅ Synchronisation réussie ! Emploi du temps et devoirs actualisés.'}
                 </span>
+              </div>
+            )}
+
+            {pronoteError && (
+              <div className="p-3 bg-rose-50 text-rose-900 border border-rose-200 rounded-xl text-xs font-bold flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{pronoteError}</span>
               </div>
             )}
           </div>

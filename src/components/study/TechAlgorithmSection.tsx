@@ -53,7 +53,7 @@ export const TechAlgorithmSection: React.FC<TechAlgorithmSectionProps> = ({ lang
               </div>
 
               {/* Python Syntax */}
-              <div className="bg-slate-900 text-emerald-400 p-2.5 rounded-xl font-mono text-xs font-semibold whitespace-pre">
+              <div className="bg-slate-900 text-emerald-400 p-2.5 rounded-xl font-mono text-xs font-semibold whitespace-pre overflow-x-auto">
                 # Python 🐍{'\n'}{item.pythonSyntax}
               </div>
 

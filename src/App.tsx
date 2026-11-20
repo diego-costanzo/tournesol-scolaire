@@ -3,21 +3,61 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, lazy, useRef, useState, useEffect } from 'react';
+import { RefreshCw, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { Header } from './components/Header';
-import { ProfileModal } from './components/ProfileModal';
-import { BridgeStatusModal } from './components/BridgeStatusModal';
-import { DesktopWindowGuideModal } from './components/modals/DesktopWindowGuideModal';
-import { HomeworkTab } from './components/tabs/HomeworkTab';
-import { SchoolTimetableTab } from './components/tabs/SchoolTimetableTab';
-import { StudyToolsTab } from './components/tabs/StudyToolsTab';
-import { MoyenneTab } from './components/tabs/MoyenneTab';
-import { UpdatesTab } from './components/tabs/UpdatesTab';
-import { AppStoreTab } from './components/tabs/AppStoreTab';
-import { MobileTransferTab } from './components/tabs/MobileTransferTab';
-import { SettingsTab } from './components/tabs/SettingsTab';
 import { AutoBackupReminder } from './components/common/AutoBackupReminder';
 import { SunflowerGraphic } from './components/common/SunflowerGraphic';
+
+/**
+ * Code-splitting: tabs and modals are loaded on demand so the first paint only
+ * ships the application shell. All chunks are same-origin and are precached by
+ * the service worker, so navigating offline keeps working.
+ */
+const HomeworkTab = lazy(() =>
+  import('./components/tabs/HomeworkTab').then((m) => ({ default: m.HomeworkTab }))
+);
+const SchoolTimetableTab = lazy(() =>
+  import('./components/tabs/SchoolTimetableTab').then((m) => ({ default: m.SchoolTimetableTab }))
+);
+const StudyToolsTab = lazy(() =>
+  import('./components/tabs/StudyToolsTab').then((m) => ({ default: m.StudyToolsTab }))
+);
+const MoyenneTab = lazy(() =>
+  import('./components/tabs/MoyenneTab').then((m) => ({ default: m.MoyenneTab }))
+);
+const UpdatesTab = lazy(() =>
+  import('./components/tabs/UpdatesTab').then((m) => ({ default: m.UpdatesTab }))
+);
+const AppStoreTab = lazy(() =>
+  import('./components/tabs/AppStoreTab').then((m) => ({ default: m.AppStoreTab }))
+);
+const MobileTransferTab = lazy(() =>
+  import('./components/tabs/MobileTransferTab').then((m) => ({ default: m.MobileTransferTab }))
+);
+const SettingsTab = lazy(() =>
+  import('./components/tabs/SettingsTab').then((m) => ({ default: m.SettingsTab }))
+);
+const ProfileModal = lazy(() =>
+  import('./components/ProfileModal').then((m) => ({ default: m.ProfileModal }))
+);
+const BridgeStatusModal = lazy(() =>
+  import('./components/BridgeStatusModal').then((m) => ({ default: m.BridgeStatusModal }))
+);
+const DesktopWindowGuideModal = lazy(() =>
+  import('./components/modals/DesktopWindowGuideModal').then((m) => ({
+    default: m.DesktopWindowGuideModal
+  }))
+);
+
+/** Lightweight placeholder shown while a tab chunk is being fetched. */
+const SectionFallback: React.FC = () => (
+  <div className="animate-pulse space-y-4 py-2" aria-busy="true" aria-live="polite">
+    <div className="h-24 rounded-3xl bg-white border border-slate-200" />
+    <div className="h-40 rounded-3xl bg-white border border-slate-200" />
+  </div>
+);
+
 import { 
   initialProfile, 
   initialUpdates, 
@@ -40,6 +80,8 @@ import { soundFx } from './utils/audio';
 import { getThemeConfig } from './utils/themeStyles';
 import { systemBridge } from './services/systemBridge';
 import { backupService } from './services/backupService';
+import { schoolAutoSync } from './services/schoolAutoSync';
+import { schoolSyncState } from './services/schoolSyncState';
 
 export default function App() {
   const [bootState, setBootState] = useState<'booting' | 'welcome' | 'ready'>('booting');
@@ -69,19 +111,16 @@ export default function App() {
 
   // 1. Profile State (Default is French for French audience, switchable to Italian for tests)
   const [profile, setProfile] = useState<StudentProfile>(() => {
-    const saved = localStorage.getItem('tournesol_profile');
     const userHasExplicitlyChosenLang = localStorage.getItem('tournesol_lang_chosen') === 'true';
+    const saved = backupService.readProfileFromLocal();
     if (saved) {
-      try { 
-        const parsed = JSON.parse(saved);
-        if (parsed.name === 'Marieme Dieye' || parsed.name === 'Marieme' || parsed.name === 'Studente') {
-          parsed.name = 'Élève';
-        }
-        if (!userHasExplicitlyChosenLang) {
-          parsed.language = 'fr';
-        }
-        return { ...initialProfile, ...parsed };
-      } catch {}
+      const merged = { ...initialProfile, ...saved };
+      // Legacy placeholder names from older versions.
+      if (merged.name === 'Marieme Dieye' || merged.name === 'Marieme' || merged.name === 'Studente') {
+        merged.name = 'Élève';
+      }
+      if (!userHasExplicitlyChosenLang) merged.language = 'fr';
+      return merged;
     }
     return initialProfile;
   });
@@ -185,9 +224,13 @@ export default function App() {
 
   // 5. Timetable State
   const [timetable, setTimetable] = useState<TimetableSlot[]>(() => {
-    const saved = localStorage.getItem('tournesol_timetable');
-    if (saved) {
-      try { return JSON.parse(saved); } catch {}
+    // Validated read: a corrupted value is dropped, then the last snapshot is restored.
+    const local = backupService.readTimetableFromLocal();
+    if (local) return local;
+    if (backupService.getRecoveryNotice() === 'timetable') {
+      const snapshot = backupService.latestSnapshotData();
+      if (snapshot?.timetable) return snapshot.timetable;
+      return [];
     }
     const mode = localStorage.getItem('tournesol_profile_mode');
     return mode === 'clean' ? [] : initialTimetable;
@@ -199,20 +242,23 @@ export default function App() {
 
   // 6. Homework State
   const [homework, setHomework] = useState<HomeworkItem[]>(() => {
-    const saved = localStorage.getItem('tournesol_homework');
-    if (saved) {
-      try {
-        const parsed: HomeworkItem[] = JSON.parse(saved);
-        const seen = new Set<string>();
-        return parsed.map((item, idx) => {
-          let uniqueId = item.id;
-          if (!uniqueId || seen.has(uniqueId)) {
-            uniqueId = `hw-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 8)}`;
-          }
-          seen.add(uniqueId);
-          return { ...item, id: uniqueId };
-        });
-      } catch {}
+    const local = backupService.readHomeworkFromLocal();
+    if (local) {
+      // Guarantee unique ids even inside an otherwise valid array.
+      const seen = new Set<string>();
+      return local.map((item, idx) => {
+        let uniqueId = item.id;
+        if (!uniqueId || seen.has(uniqueId)) {
+          uniqueId = `hw-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 8)}`;
+        }
+        seen.add(uniqueId);
+        return { ...item, id: uniqueId };
+      });
+    }
+    if (backupService.getRecoveryNotice() === 'homework') {
+      const snapshot = backupService.latestSnapshotData();
+      if (snapshot?.homework) return snapshot.homework;
+      return [];
     }
     const mode = localStorage.getItem('tournesol_profile_mode');
     return mode === 'clean' ? [] : initialHomework;
@@ -247,8 +293,8 @@ export default function App() {
     setTerminalLogs(prev => [
       ...prev,
       `[${new Date().toLocaleTimeString()}] $ ${cmd}`,
-      isIt ? "Verifica firme crittografiche e integrità..." : "Vérification des signatures et de l'intégrité...",
-      isIt ? "Tutti i cataloghi sono aggiornati e sicuri." : "Tous les paquets sont à jour et vérifiés."
+      isIt ? "Simulazione locale: nessun comando viene eseguito." : "Simulation locale : aucune commande n'est exécutée.",
+      isIt ? "Usa « Copia comando » per aggiornare davvero il sistema." : "Utilisez « Copier la commande » pour mettre à jour le système."
     ]);
 
     await new Promise(r => setTimeout(r, 1000));
@@ -259,20 +305,18 @@ export default function App() {
     setIsUpdatingSystem(true);
     setUpdateProgress(15);
     const cmd = profile.operatingSystem === 'fedora' ? 'dnf upgrade -y' : profile.operatingSystem === 'arch' ? 'pacman -Syu --noconfirm' : profile.operatingSystem === 'macos' ? 'brew upgrade' : 'apt-get upgrade -y';
+    const scope = mode === 'security' ? (isIt ? 'sicurezza' : 'sécurité') : (isIt ? 'completo' : 'complet');
 
     setTerminalLogs(prev => [
       ...prev,
       `[${new Date().toLocaleTimeString()}] $ ${cmd}`,
-      isIt ? "Scaricamento pacchetti verificati..." : "Téléchargement des paquets vérifiés..."
+      isIt
+        ? `Simulazione aggiornamento ${scope}: nessun comando viene eseguito.`
+        : `Simulation de mise à jour ${scope} : aucune commande n'est exécutée.`
     ]);
 
     await new Promise(r => setTimeout(r, 600));
     setUpdateProgress(55);
-
-    setTerminalLogs(prev => [
-      ...prev,
-      isIt ? "Verifica hash SHA256 e applicazione patch..." : "Vérification SHA256 et installation..."
-    ]);
 
     await new Promise(r => setTimeout(r, 600));
     setUpdateProgress(85);
@@ -282,15 +326,10 @@ export default function App() {
 
     setTerminalLogs(prev => [
       ...prev,
-      isIt ? "✅ Operazione completata. Il computer è protetto e stabile." : "✅ Opération terminée. Le système est protégé et stable.",
-      isIt ? "Pulizia cache e pacchetti orfani completata." : "Nettoyage du cache terminé."
+      isIt
+        ? "⚠️ Anteprima completata. Copia il comando e avvialo nel terminale per applicare davvero gli aggiornamenti."
+        : "⚠️ Aperçu terminé. Copiez la commande et exécutez-la dans le terminal pour appliquer les mises à jour."
     ]);
-
-    if (mode === 'security') {
-      setUpdates(prev => prev.filter(u => u.severity !== 'critical-security'));
-    } else {
-      setUpdates([]);
-    }
 
     setIsUpdatingSystem(false);
   };
@@ -433,14 +472,17 @@ export default function App() {
   };
 
   const handleRestoreBackup = (backupData: any) => {
-    if (!backupData || typeof backupData !== 'object') return;
-    if (backupData.profile) setProfile(backupData.profile);
-    if (Array.isArray(backupData.homework)) setHomework(backupData.homework);
-    if (Array.isArray(backupData.timetable)) setTimetable(backupData.timetable);
-    if (backupData.studyNotes) localStorage.setItem('tournesol_study_notes', backupData.studyNotes);
-    if (backupData.installedPacks) localStorage.setItem('tournesol_installed_packs', typeof backupData.installedPacks === 'string' ? backupData.installedPacks : JSON.stringify(backupData.installedPacks));
-    if (backupData.studyHistory) localStorage.setItem('tournesol_study_history', typeof backupData.studyHistory === 'string' ? backupData.studyHistory : JSON.stringify(backupData.studyHistory));
-    if (backupData.quizMistakes) localStorage.setItem('tournesol_quiz_mistakes', typeof backupData.quizMistakes === 'string' ? backupData.quizMistakes : JSON.stringify(backupData.quizMistakes));
+    // Never trust imported JSON: validate types and sizes before touching the state.
+    const clean = backupService.sanitizeBackup(backupData);
+    if (!clean) return;
+    if (clean.profile) setProfile(prev => ({ ...prev, ...clean.profile }));
+    if (clean.homework) setHomework(clean.homework);
+    if (clean.timetable) setTimetable(clean.timetable);
+    if (clean.studyNotes !== null) localStorage.setItem('tournesol_study_notes', clean.studyNotes);
+    if (clean.installedPacks !== null) localStorage.setItem('tournesol_installed_packs', clean.installedPacks);
+    if (clean.studyHistory !== null) localStorage.setItem('tournesol_study_history', clean.studyHistory);
+    if (clean.quizMistakes !== null) localStorage.setItem('tournesol_quiz_mistakes', clean.quizMistakes);
+    if (clean.srsCards !== null) localStorage.setItem('tournesol_srs_cards', clean.srsCards);
   };
 
   const [diskBackupFound, setDiskBackupFound] = useState<any | null>(null);
@@ -455,7 +497,21 @@ export default function App() {
     // Auto-heal / detect saved state from local PC disk
     backupService.loadFromDiskServer().then(diskData => {
       if (diskData && (diskData.profile || diskData.homework)) {
-        setDiskBackupFound(diskData);
+        // If the browser wiped its storage, restore the PC copy silently instead
+        // of letting the auto-save overwrite it with empty data.
+        const localWasEmpty =
+          localStorage.getItem('tournesol_homework') === null &&
+          localStorage.getItem('tournesol_timetable') === null;
+        const clean = localWasEmpty ? backupService.sanitizeBackup(diskData) : null;
+
+        if (clean && ((clean.homework?.length ?? 0) > 0 || (clean.timetable?.length ?? 0) > 0)) {
+          if (clean.homework) setHomework(clean.homework);
+          if (clean.timetable) setTimetable(clean.timetable);
+          if (clean.profile) setProfile(prev => ({ ...prev, ...clean.profile }));
+          setRecoveryNotice('disk');
+        } else {
+          setDiskBackupFound(diskData);
+        }
       }
       setIsDiskInitialized(true);
     }).catch(() => {
@@ -473,6 +529,55 @@ export default function App() {
     }, 3500);
     return () => clearTimeout(timer);
   }, [profile, homework, timetable, isDiskInitialized]);
+
+  // Silent school-calendar refresh: local copy first, at most one download per day.
+  const latestDataRef = useRef({ homework, timetable, isIt });
+  const autoSyncStarted = useRef(false);
+  const [autoSyncNotice, setAutoSyncNotice] = useState<string | null>(null);
+  const [syncState, setSyncState] = useState(() => schoolSyncState.get());
+  const [recoveryNotice, setRecoveryNotice] = useState<string | null>(() =>
+    backupService.getRecoveryNotice()
+  );
+
+  useEffect(() => {
+    latestDataRef.current = { homework, timetable, isIt };
+  }, [homework, timetable, isIt]);
+
+  useEffect(() => {
+    if (bootState !== 'ready' || profileMode === 'demo') return;
+    const timer = setTimeout(async () => {
+      if (autoSyncStarted.current) return;
+      autoSyncStarted.current = true;
+
+      const snapshot = latestDataRef.current;
+      const result = await schoolAutoSync.run();
+      // Refresh the "last update" indicator even when nothing new arrived.
+      setSyncState(schoolSyncState.get());
+      if (!result) return;
+
+      const hwKey = (h: { subject: string; title: string; dueDate: string }) =>
+        `${h.subject}|${h.title}|${h.dueDate}`;
+      const slotKey = (s: { day: string; startTime: string; subject: string }) =>
+        `${s.day}|${s.startTime}|${s.subject}`;
+
+      const knownHomework = new Set(snapshot.homework.map(hwKey));
+      const knownSlots = new Set(snapshot.timetable.map(slotKey));
+      const newHomework = result.homework.filter(h => !knownHomework.has(hwKey(h)));
+      const newSlots = result.slots.filter(s => !knownSlots.has(slotKey(s)));
+
+      if (newHomework.length > 0) handleAddBatchHomework(newHomework);
+      if (newSlots.length > 0) handleBatchAddSlots(newSlots);
+
+      if (newHomework.length > 0 || newSlots.length > 0) {
+        setAutoSyncNotice(
+          snapshot.isIt
+            ? `Calendario scolastico aggiornato dal PC: ${newSlots.length} lezioni e ${newHomework.length} compiti.`
+            : `Emploi du temps mis à jour depuis le PC : ${newSlots.length} cours et ${newHomework.length} devoirs.`
+        );
+      }
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [bootState, profileMode]);
 
   const hasCriticalUpdates = updates.some(u => u.severity === 'critical-security');
   const pendingHomeworkCount = homework.filter(h => !h.completed).length;
@@ -693,6 +798,61 @@ export default function App() {
           />
         </div>
 
+        {/* Data recovered from a corrupted local storage */}
+        {recoveryNotice && (
+          <div className="mb-4 p-3 rounded-2xl bg-sky-50 border border-sky-200 flex items-start justify-between gap-3 print:hidden">
+            <p className="text-xs font-bold text-sky-900 flex items-start gap-2 min-w-0">
+              <ShieldCheck className="w-4 h-4 shrink-0 text-sky-600 mt-0.5" />
+              <span className="break-words">
+                {isIt
+                  ? 'Dati locali danneggiati o mancanti: ho ripristinato l\'ultima copia valida salvata su questo PC.'
+                  : 'Données locales corrompues ou manquantes : la dernière copie valide enregistrée sur ce PC a été restaurée.'}
+              </span>
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                backupService.clearRecoveryNotice();
+                setRecoveryNotice(null);
+              }}
+              className="p-1.5 rounded-lg text-sky-800 hover:bg-sky-100 transition cursor-pointer shrink-0"
+              aria-label={isIt ? 'Chiudi avviso' : 'Fermer la notification'}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* School data getting old: the student should know it explicitly */}
+        {syncState.configured && schoolSyncState.isStale(syncState.lastSuccess) && (
+          <div className="mb-4 p-3 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-2 print:hidden">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+            <p className="text-xs font-bold text-amber-900 min-w-0 break-words">
+              {isIt
+                ? `Calendario della scuola non aggiornato (ultimo: ${schoolSyncState.formatLast(syncState.lastSuccess, true)}). Controlla che il Connettore sia attivo, poi sincronizza da Impostazioni.`
+                : `Emploi du temps non actualisé (dernier : ${schoolSyncState.formatLast(syncState.lastSuccess, false)}). Vérifiez que le Connecteur est actif, puis synchronisez depuis les Réglages.`}
+            </p>
+          </div>
+        )}
+
+        {/* School calendar refreshed automatically from the local copy on this PC */}
+        {autoSyncNotice && (
+          <div className="mb-4 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3 print:hidden">
+            <p className="text-xs font-bold text-emerald-900 flex items-start gap-2 min-w-0">
+              <RefreshCw className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" />
+              <span className="break-words">{autoSyncNotice}</span>
+            </p>
+            <button
+              type="button"
+              onClick={() => setAutoSyncNotice(null)}
+              className="p-1.5 rounded-lg text-emerald-800 hover:bg-emerald-100 transition cursor-pointer shrink-0"
+              aria-label={isIt ? 'Chiudi avviso' : 'Fermer la notification'}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* Banner Modalità Demo */}
         {profileMode === 'demo' && (
           <div className="mb-6 p-4 rounded-2xl bg-indigo-50 border border-indigo-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 print:hidden">
@@ -738,7 +898,7 @@ export default function App() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+            <div className="flex flex-wrap items-center gap-2 shrink-0 self-end sm:self-center">
               <button
                 type="button"
                 onClick={() => {
@@ -763,6 +923,7 @@ export default function App() {
         )}
 
         {/* 1. Compiti (In Evidenza) */}
+        <Suspense fallback={<SectionFallback />}>
         {activeTab === 'homework' && (
           <HomeworkTab
             profile={profile}
@@ -868,34 +1029,47 @@ export default function App() {
             onOpenDesktopWindowModal={() => setIsDesktopWindowModalOpen(true)}
           />
         )}
+        </Suspense>
       </main>
 
       {/* Profile & Onboarding Modal */}
-      <ProfileModal
-        isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
-        profile={profile}
-        onSaveProfile={handleUpdateProfile}
-        onOpenBridgeModal={() => {
-          setIsProfileModalOpen(false);
-          setIsBridgeModalOpen(true);
-        }}
-      />
+      {isProfileModalOpen && (
+        <Suspense fallback={null}>
+          <ProfileModal
+            isOpen={isProfileModalOpen}
+            onClose={() => setIsProfileModalOpen(false)}
+            profile={profile}
+            onSaveProfile={handleUpdateProfile}
+            onOpenBridgeModal={() => {
+              setIsProfileModalOpen(false);
+              setIsBridgeModalOpen(true);
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* Local System Bridge Modal */}
-      <BridgeStatusModal
-        isOpen={isBridgeModalOpen}
-        onClose={() => setIsBridgeModalOpen(false)}
-        os={profile.operatingSystem}
-        language={profile.language}
-      />
+      {isBridgeModalOpen && (
+        <Suspense fallback={null}>
+          <BridgeStatusModal
+            isOpen={isBridgeModalOpen}
+            onClose={() => setIsBridgeModalOpen(false)}
+            os={profile.operatingSystem}
+            language={profile.language}
+          />
+        </Suspense>
+      )}
 
       {/* Standalone Window & Desktop Launcher Modal */}
-      <DesktopWindowGuideModal
-        isOpen={isDesktopWindowModalOpen}
-        onClose={() => setIsDesktopWindowModalOpen(false)}
-        language={profile.language}
-      />
+      {isDesktopWindowModalOpen && (
+        <Suspense fallback={null}>
+          <DesktopWindowGuideModal
+            isOpen={isDesktopWindowModalOpen}
+            onClose={() => setIsDesktopWindowModalOpen(false)}
+            language={profile.language}
+          />
+        </Suspense>
+      )}
 
       {/* Footer */}
       <footer className={`border-t ${theme.headerBorder} ${theme.subHeaderBg} py-3 px-4 sm:px-6 text-xs ${theme.mutedText}`}>

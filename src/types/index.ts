@@ -309,6 +309,32 @@ export interface QuizMistakeRecord {
   mastered: boolean;
 }
 
+/**
+ * Flashcard scheduled with SM-2 (SuperMemo 2, public algorithm).
+ * Everything is stored locally: no card ever leaves the student's device.
+ */
+export interface SrsCard {
+  id: string;
+  source: 'quiz' | 'notes' | 'manual';
+  subject: string;
+  front_it: string;
+  front_fr: string;
+  back_it: string;
+  back_fr: string;
+  /** Optional multiple choice, inherited from the quiz laboratory. */
+  choices: string[] | null;
+  correctIndex: number | null;
+  /** SM-2 state. */
+  ease: number;
+  intervalDays: number;
+  repetitions: number;
+  lapses: number;
+  /** Next review date (YYYY-MM-DD). */
+  due: string;
+  createdAt: string;
+  lastReviewed: string | null;
+}
+
 // ==========================================
 // GRADES & MOYENNE (VOTI)
 // ==========================================

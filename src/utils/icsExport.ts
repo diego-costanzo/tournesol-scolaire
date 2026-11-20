@@ -4,6 +4,14 @@ const generateICSDate = (date: Date): string => {
   return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 };
 
+// RFC 5545: escape backslash, newlines, semicolons and commas in text values.
+const escapeICalText = (value: string): string =>
+  String(value)
+    .replace(/\\/g, '\\\\')
+    .replace(/\r?\n/g, '\\n')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,');
+
 export const exportTimetableToICS = (timetable: TimetableSlot[], currentWeek: 'A' | 'B' | 'both', language: 'it' | 'fr') => {
   let icsLines = [
     'BEGIN:VCALENDAR',
@@ -44,9 +52,9 @@ export const exportTimetableToICS = (timetable: TimetableSlot[], currentWeek: 'A
         `DTSTAMP:${generateICSDate(new Date())}`,
         `DTSTART:${generateICSDate(startDate)}`,
         `DTEND:${generateICSDate(endDate)}`,
-        `SUMMARY:${slot.subject}`,
-        `LOCATION:${slot.room}`,
-        `DESCRIPTION:Prof: ${slot.teacher}`,
+        `SUMMARY:${escapeICalText(slot.subject)}`,
+        `LOCATION:${escapeICalText(slot.room)}`,
+        `DESCRIPTION:${escapeICalText(`Prof: ${slot.teacher}`)}`,
         'END:VEVENT'
       );
     }

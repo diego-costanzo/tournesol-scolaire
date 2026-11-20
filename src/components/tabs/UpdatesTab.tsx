@@ -295,7 +295,7 @@ export const UpdatesTab: React.FC<UpdatesTabProps> = ({
         {isUpdating && (
           <div className="mt-5 space-y-2">
             <div className="flex justify-between text-xs font-bold text-slate-700">
-              <span>{isIt ? 'Installazione aggiornamenti di sicurezza in corso...' : 'Installation des paquets sécurisés...'}</span>
+              <span>{isIt ? 'Simulazione aggiornamenti (nessun comando eseguito)...' : 'Simulation des mises à jour (aucune commande exécutée)...'}</span>
               <span>{updateProgress}%</span>
             </div>
             <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
